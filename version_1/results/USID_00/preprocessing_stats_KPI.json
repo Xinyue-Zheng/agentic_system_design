@@ -1,0 +1,333 @@
+{
+    "meta": {
+      "target_usid": "USID_00",
+      "backup_usids": ["USID_31", "USID_44"],
+      "shutdown_start": "2025-03-18T20:00",
+      "shutdown_end": "2025-03-19T23:00",
+      "window_hours": 27,
+      "theoretical_max_mbps": {
+        "USID_00": 1200.0,
+        "USID_31": 950.0,
+        "USID_44": 800.0
+      },
+      "thresholds_used": {
+        "peak_threshold_pct_of_p90": 80,
+        "saturation_threshold_pct_of_max": 90,
+        "verdict_marginal_min_saturated_hours": 1,
+        "verdict_insufficient_min_saturated_hours": 4
+      }
+    },
+  
+    "baseline_profiles": {
+      "USID_00": {
+        "throughput_p50": 410.5,
+        "throughput_p90": 780.2,
+        "utilization_ratio": 0.65,
+        "hourly_pattern": [
+          {"hour": 0,  "avg_throughput_mbps": 95.2,  "avg_volume_gb": 4.1},
+          {"hour": 1,  "avg_throughput_mbps": 72.4,  "avg_volume_gb": 3.2},
+          {"hour": 2,  "avg_throughput_mbps": 61.1,  "avg_volume_gb": 2.8},
+          {"hour": 3,  "avg_throughput_mbps": 55.3,  "avg_volume_gb": 2.5},
+          {"hour": 4,  "avg_throughput_mbps": 58.7,  "avg_volume_gb": 2.6},
+          {"hour": 5,  "avg_throughput_mbps": 88.4,  "avg_volume_gb": 3.8},
+          {"hour": 6,  "avg_throughput_mbps": 210.3, "avg_volume_gb": 9.2},
+          {"hour": 7,  "avg_throughput_mbps": 390.1, "avg_volume_gb": 16.8},
+          {"hour": 8,  "avg_throughput_mbps": 510.4, "avg_volume_gb": 22.1},
+          {"hour": 9,  "avg_throughput_mbps": 540.2, "avg_volume_gb": 23.4},
+          {"hour": 10, "avg_throughput_mbps": 520.8, "avg_volume_gb": 22.6},
+          {"hour": 11, "avg_throughput_mbps": 530.1, "avg_volume_gb": 23.0},
+          {"hour": 12, "avg_throughput_mbps": 600.4, "avg_volume_gb": 26.0},
+          {"hour": 13, "avg_throughput_mbps": 580.3, "avg_volume_gb": 25.1},
+          {"hour": 14, "avg_throughput_mbps": 560.7, "avg_volume_gb": 24.3},
+          {"hour": 15, "avg_throughput_mbps": 590.2, "avg_volume_gb": 25.5},
+          {"hour": 16, "avg_throughput_mbps": 650.8, "avg_volume_gb": 28.2},
+          {"hour": 17, "avg_throughput_mbps": 720.4, "avg_volume_gb": 31.2},
+          {"hour": 18, "avg_throughput_mbps": 760.1, "avg_volume_gb": 32.9},
+          {"hour": 19, "avg_throughput_mbps": 810.3, "avg_volume_gb": 35.1},
+          {"hour": 20, "avg_throughput_mbps": 790.5, "avg_volume_gb": 34.2},
+          {"hour": 21, "avg_throughput_mbps": 730.2, "avg_volume_gb": 31.6},
+          {"hour": 22, "avg_throughput_mbps": 620.4, "avg_volume_gb": 26.9},
+          {"hour": 23, "avg_throughput_mbps": 380.1, "avg_volume_gb": 16.5}
+        ],
+        "weekly_pattern": [
+          {"day_of_week": 0, "day_name": "Monday",    "avg_throughput_mbps": 377.7, "avg_volume_gb": 16.9},
+          {"day_of_week": 1, "day_name": "Tuesday",   "avg_throughput_mbps": 385.9, "avg_volume_gb": 17.2},
+          {"day_of_week": 2, "day_name": "Wednesday", "avg_throughput_mbps": 390.0, "avg_volume_gb": 17.4},
+          {"day_of_week": 3, "day_name": "Thursday",  "avg_throughput_mbps": 394.1, "avg_volume_gb": 17.6},
+          {"day_of_week": 4, "day_name": "Friday",    "avg_throughput_mbps": 443.3, "avg_volume_gb": 19.8},
+          {"day_of_week": 5, "day_name": "Saturday",  "avg_throughput_mbps": 459.8, "avg_volume_gb": 20.5},
+          {"day_of_week": 6, "day_name": "Sunday",    "avg_throughput_mbps": 402.1, "avg_volume_gb": 18.0}
+        ]
+      },
+  
+      "USID_31": {
+        "throughput_p50": 520.3,
+        "throughput_p90": 821.4,
+        "utilization_ratio": 0.86,
+        "hourly_pattern": [
+          {"hour": 0,  "avg_throughput_mbps": 130.2, "avg_volume_gb": 5.6},
+          {"hour": 1,  "avg_throughput_mbps": 101.4, "avg_volume_gb": 4.4},
+          {"hour": 2,  "avg_throughput_mbps": 88.3,  "avg_volume_gb": 3.8},
+          {"hour": 3,  "avg_throughput_mbps": 79.1,  "avg_volume_gb": 3.4},
+          {"hour": 4,  "avg_throughput_mbps": 82.5,  "avg_volume_gb": 3.6},
+          {"hour": 5,  "avg_throughput_mbps": 115.3, "avg_volume_gb": 5.0},
+          {"hour": 6,  "avg_throughput_mbps": 280.4, "avg_volume_gb": 12.1},
+          {"hour": 7,  "avg_throughput_mbps": 450.2, "avg_volume_gb": 19.5},
+          {"hour": 8,  "avg_throughput_mbps": 590.1, "avg_volume_gb": 25.5},
+          {"hour": 9,  "avg_throughput_mbps": 620.3, "avg_volume_gb": 26.8},
+          {"hour": 10, "avg_throughput_mbps": 600.4, "avg_volume_gb": 26.0},
+          {"hour": 11, "avg_throughput_mbps": 610.2, "avg_volume_gb": 26.4},
+          {"hour": 12, "avg_throughput_mbps": 670.5, "avg_volume_gb": 29.0},
+          {"hour": 13, "avg_throughput_mbps": 650.1, "avg_volume_gb": 28.1},
+          {"hour": 14, "avg_throughput_mbps": 630.8, "avg_volume_gb": 27.3},
+          {"hour": 15, "avg_throughput_mbps": 660.4, "avg_volume_gb": 28.6},
+          {"hour": 16, "avg_throughput_mbps": 720.3, "avg_volume_gb": 31.2},
+          {"hour": 17, "avg_throughput_mbps": 790.1, "avg_volume_gb": 34.2},
+          {"hour": 18, "avg_throughput_mbps": 830.4, "avg_volume_gb": 35.9},
+          {"hour": 19, "avg_throughput_mbps": 860.2, "avg_volume_gb": 37.2},
+          {"hour": 20, "avg_throughput_mbps": 850.3, "avg_volume_gb": 36.8},
+          {"hour": 21, "avg_throughput_mbps": 800.1, "avg_volume_gb": 34.6},
+          {"hour": 22, "avg_throughput_mbps": 680.3, "avg_volume_gb": 29.4},
+          {"hour": 23, "avg_throughput_mbps": 420.5, "avg_volume_gb": 18.2}
+        ],
+        "weekly_pattern": [
+          {"day_of_week": 0, "day_name": "Monday",    "avg_throughput_mbps": 490.2, "avg_volume_gb": 21.2},
+          {"day_of_week": 1, "day_name": "Tuesday",   "avg_throughput_mbps": 498.4, "avg_volume_gb": 21.6},
+          {"day_of_week": 2, "day_name": "Wednesday", "avg_throughput_mbps": 503.1, "avg_volume_gb": 21.8},
+          {"day_of_week": 3, "day_name": "Thursday",  "avg_throughput_mbps": 510.6, "avg_volume_gb": 22.1},
+          {"day_of_week": 4, "day_name": "Friday",    "avg_throughput_mbps": 572.3, "avg_volume_gb": 24.8},
+          {"day_of_week": 5, "day_name": "Saturday",  "avg_throughput_mbps": 599.1, "avg_volume_gb": 25.9},
+          {"day_of_week": 6, "day_name": "Sunday",    "avg_throughput_mbps": 531.4, "avg_volume_gb": 23.0}
+        ]
+      },
+  
+      "USID_44": {
+        "throughput_p50": 280.1,
+        "throughput_p90": 430.5,
+        "utilization_ratio": 0.54,
+        "hourly_pattern": [
+          {"hour": 0,  "avg_throughput_mbps": 58.4,  "avg_volume_gb": 2.5},
+          {"hour": 1,  "avg_throughput_mbps": 44.2,  "avg_volume_gb": 1.9},
+          {"hour": 2,  "avg_throughput_mbps": 38.1,  "avg_volume_gb": 1.6},
+          {"hour": 3,  "avg_throughput_mbps": 33.5,  "avg_volume_gb": 1.4},
+          {"hour": 4,  "avg_throughput_mbps": 36.2,  "avg_volume_gb": 1.6},
+          {"hour": 5,  "avg_throughput_mbps": 55.8,  "avg_volume_gb": 2.4},
+          {"hour": 6,  "avg_throughput_mbps": 140.3, "avg_volume_gb": 6.1},
+          {"hour": 7,  "avg_throughput_mbps": 230.5, "avg_volume_gb": 10.0},
+          {"hour": 8,  "avg_throughput_mbps": 300.2, "avg_volume_gb": 13.0},
+          {"hour": 9,  "avg_throughput_mbps": 315.4, "avg_volume_gb": 13.6},
+          {"hour": 10, "avg_throughput_mbps": 308.1, "avg_volume_gb": 13.3},
+          {"hour": 11, "avg_throughput_mbps": 312.5, "avg_volume_gb": 13.5},
+          {"hour": 12, "avg_throughput_mbps": 355.2, "avg_volume_gb": 15.4},
+          {"hour": 13, "avg_throughput_mbps": 340.8, "avg_volume_gb": 14.7},
+          {"hour": 14, "avg_throughput_mbps": 330.1, "avg_volume_gb": 14.3},
+          {"hour": 15, "avg_throughput_mbps": 345.6, "avg_volume_gb": 14.9},
+          {"hour": 16, "avg_throughput_mbps": 375.3, "avg_volume_gb": 16.2},
+          {"hour": 17, "avg_throughput_mbps": 400.2, "avg_volume_gb": 17.3},
+          {"hour": 18, "avg_throughput_mbps": 415.8, "avg_volume_gb": 18.0},
+          {"hour": 19, "avg_throughput_mbps": 430.1, "avg_volume_gb": 18.6},
+          {"hour": 20, "avg_throughput_mbps": 420.3, "avg_volume_gb": 18.2},
+          {"hour": 21, "avg_throughput_mbps": 395.4, "avg_volume_gb": 17.1},
+          {"hour": 22, "avg_throughput_mbps": 340.2, "avg_volume_gb": 14.7},
+          {"hour": 23, "avg_throughput_mbps": 210.6, "avg_volume_gb": 9.1}
+        ],
+        "weekly_pattern": [
+          {"day_of_week": 0, "day_name": "Monday",    "avg_throughput_mbps": 262.1, "avg_volume_gb": 11.3},
+          {"day_of_week": 1, "day_name": "Tuesday",   "avg_throughput_mbps": 268.4, "avg_volume_gb": 11.6},
+          {"day_of_week": 2, "day_name": "Wednesday", "avg_throughput_mbps": 271.0, "avg_volume_gb": 11.7},
+          {"day_of_week": 3, "day_name": "Thursday",  "avg_throughput_mbps": 274.5, "avg_volume_gb": 11.9},
+          {"day_of_week": 4, "day_name": "Friday",    "avg_throughput_mbps": 294.1, "avg_volume_gb": 12.7},
+          {"day_of_week": 5, "day_name": "Saturday",  "avg_throughput_mbps": 302.6, "avg_volume_gb": 13.1},
+          {"day_of_week": 6, "day_name": "Sunday",    "avg_throughput_mbps": 277.8, "avg_volume_gb": 12.0}
+        ]
+      }
+    },
+  
+    "shutdown_window_profile": {
+      "total_hours": 27,
+      "peak_hour_count": 9,
+      "off_peak_hour_count": 18,
+      "highest_load_hour": "2025-03-19T19:00",
+      "highest_load_mbps": 909.5,
+      "total_expected_volume_gb": 487.2,
+      "hours": [
+        {
+          "time": "2025-03-18T20:00",
+          "hour_of_day": 20,
+          "day_of_week": 4,
+          "day_name": "Friday",
+          "is_peak": true,
+          "forecast_throughput_mbps": 876.9,
+          "forecast_volume_gb": 36.9
+        },
+        {
+          "time": "2025-03-18T21:00",
+          "hour_of_day": 21,
+          "day_of_week": 4,
+          "day_name": "Friday",
+          "is_peak": true,
+          "forecast_throughput_mbps": 811.8,
+          "forecast_volume_gb": 34.1
+        },
+        {
+          "time": "2025-03-18T22:00",
+          "hour_of_day": 22,
+          "day_of_week": 4,
+          "day_name": "Friday",
+          "is_peak": false,
+          "forecast_throughput_mbps": 689.6,
+          "forecast_volume_gb": 29.1
+        },
+        {
+          "time": "2025-03-18T23:00",
+          "hour_of_day": 23,
+          "day_of_week": 4,
+          "day_name": "Friday",
+          "is_peak": false,
+          "forecast_throughput_mbps": 422.5,
+          "forecast_volume_gb": 17.8
+        },
+        {
+          "time": "2025-03-19T00:00",
+          "hour_of_day": 0,
+          "day_of_week": 5,
+          "day_name": "Saturday",
+          "is_peak": false,
+          "forecast_throughput_mbps": 109.5,
+          "forecast_volume_gb": 4.7
+        },
+        {
+          "time": "2025-03-19T19:00",
+          "hour_of_day": 19,
+          "day_of_week": 5,
+          "day_name": "Saturday",
+          "is_peak": true,
+          "forecast_throughput_mbps": 909.5,
+          "forecast_volume_gb": 39.3
+        },
+        {
+          "time": "2025-03-19T20:00",
+          "hour_of_day": 20,
+          "day_of_week": 5,
+          "day_name": "Saturday",
+          "is_peak": true,
+          "forecast_throughput_mbps": 887.2,
+          "forecast_volume_gb": 38.4
+        },
+        {
+          "time": "2025-03-19T22:00",
+          "hour_of_day": 22,
+          "day_of_week": 5,
+          "day_name": "Saturday",
+          "is_peak": false,
+          "forecast_throughput_mbps": 714.2,
+          "forecast_volume_gb": 30.9
+        },
+        {
+          "time": "2025-03-19T23:00",
+          "hour_of_day": 23,
+          "day_of_week": 5,
+          "day_name": "Saturday",
+          "is_peak": false,
+          "forecast_throughput_mbps": 438.5,
+          "forecast_volume_gb": 19.0
+        }
+      ]
+    },
+  
+    "backup_capacity_check": {
+      "USID_31": {
+        "max_capacity_mbps": 950.0,
+        "share_of_target_traffic": 0.65,
+        "hours_will_saturate": 6,
+        "tightest_hour": "2025-03-19T19:00",
+        "tightest_hour_spare_capacity_mbps": 3.8,
+        "tightest_hour_spare_capacity_pct": 0.4,
+        "verdict": "insufficient",
+        "hours": [
+          {
+            "time": "2025-03-18T20:00",
+            "day_name": "Friday",
+            "own_load_mbps": 935.2,
+            "extra_load_from_target_mbps": 570.0,
+            "total_load_mbps": 950.0,
+            "spare_capacity_mbps": 0.0,
+            "spare_capacity_pct": 0.0,
+            "will_saturate": true
+          },
+          {
+            "time": "2025-03-18T23:00",
+            "day_name": "Friday",
+            "own_load_mbps": 480.2,
+            "extra_load_from_target_mbps": 274.6,
+            "total_load_mbps": 754.8,
+            "spare_capacity_mbps": 195.2,
+            "spare_capacity_pct": 20.5,
+            "will_saturate": false
+          },
+          {
+            "time": "2025-03-19T00:00",
+            "day_name": "Saturday",
+            "own_load_mbps": 149.5,
+            "extra_load_from_target_mbps": 71.2,
+            "total_load_mbps": 220.7,
+            "spare_capacity_mbps": 729.3,
+            "spare_capacity_pct": 76.8,
+            "will_saturate": false
+          },
+          {
+            "time": "2025-03-19T19:00",
+            "day_name": "Saturday",
+            "own_load_mbps": 943.0,
+            "extra_load_from_target_mbps": 591.2,
+            "total_load_mbps": 950.0,
+            "spare_capacity_mbps": 3.8,
+            "spare_capacity_pct": 0.4,
+            "will_saturate": true
+          }
+        ]
+      },
+  
+      "USID_44": {
+        "max_capacity_mbps": 800.0,
+        "share_of_target_traffic": 0.35,
+        "hours_will_saturate": 0,
+        "tightest_hour": "2025-03-19T19:00",
+        "tightest_hour_spare_capacity_mbps": 27.5,
+        "tightest_hour_spare_capacity_pct": 3.4,
+        "verdict": "marginal",
+        "hours": [
+          {
+            "time": "2025-03-18T20:00",
+            "day_name": "Friday",
+            "own_load_mbps": 432.1,
+            "extra_load_from_target_mbps": 306.9,
+            "total_load_mbps": 739.0,
+            "spare_capacity_mbps": 61.0,
+            "spare_capacity_pct": 7.6,
+            "will_saturate": false
+          },
+          {
+            "time": "2025-03-19T00:00",
+            "day_name": "Saturday",
+            "own_load_mbps": 58.4,
+            "extra_load_from_target_mbps": 38.3,
+            "total_load_mbps": 96.7,
+            "spare_capacity_mbps": 703.3,
+            "spare_capacity_pct": 87.9,
+            "will_saturate": false
+          },
+          {
+            "time": "2025-03-19T19:00",
+            "day_name": "Saturday",
+            "own_load_mbps": 453.9,
+            "extra_load_from_target_mbps": 318.6,
+            "total_load_mbps": 772.5,
+            "spare_capacity_mbps": 27.5,
+            "spare_capacity_pct": 3.4,
+            "will_saturate": false
+          }
+        ]
+      }
+    }
+  }

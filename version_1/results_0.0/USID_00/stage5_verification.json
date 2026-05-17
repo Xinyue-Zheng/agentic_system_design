@@ -1,0 +1,143 @@
+{
+  "verification_summary": {
+    "total_checks": 15,
+    "passed": 15,
+    "failed": 0,
+    "flagged": 0,
+    "overall_result": "PASS"
+  },
+  "checks": [
+    {
+      "check_id": "V1",
+      "description": "Every USID role label in Stage 1 matches preprocessing inferred_role",
+      "result": "PASS",
+      "expected": "USID_00=edge-limited, USID_27=edge-limited, USID_29=edge-limited, USID_41=edge-limited, USID_37=edge-limited, USID_31=edge-limited",
+      "found": "Stage 1 assigns edge-limited to all six USIDs — matches preprocessing exactly",
+      "note": "All six USIDs in the dense suburban topology have dominant_pixel_fraction < 0.05, correctly classified as edge-limited throughout."
+    },
+    {
+      "check_id": "V2",
+      "description": "Every cited dominant_pixel_fraction within +/-0.01 of pre-computed value",
+      "result": "PASS",
+      "expected": "USID_00=0.0163, USID_27=0.0206, USID_29=0.0219, USID_41=0.0125, USID_37=0.0088, USID_31=0.0156",
+      "found": "Stage 1 cites: USID_00=0.0163, USID_27=0.0206, USID_29=0.0219, USID_41=0.0125, USID_37=0.0088, USID_31=0.0156 — exact match, all delta=0.0000",
+      "note": "All values cited verbatim from preprocessing_stats.json."
+    },
+    {
+      "check_id": "V3",
+      "description": "Every cited rsrp_p50_dbm within +/-2 dBm of pre-computed value",
+      "result": "PASS",
+      "expected": "USID_00=-57.0, USID_27=-58.58, USID_29=-57.96, USID_41=-53.94, USID_37=-57.28, USID_31=-52.75",
+      "found": "Stage 1 cites: USID_00=-57.0, USID_27=-58.58, USID_29=-57.96, USID_41=-53.94, USID_37=-57.28, USID_31=-52.75 — exact match, all delta=0.00",
+      "note": "All values cited verbatim from preprocessing_stats.json coverage_summary.per_usid."
+    },
+    {
+      "check_id": "V4",
+      "description": "coverage_hole_fraction within +/-0.01 of pre-computed value",
+      "result": "PASS",
+      "expected": "0.1154 (from preprocessing load_redistribution.coverage_hole_fraction)",
+      "found": "Stage 1 cites coverage_hole_fraction = 0.1154 — exact match, delta=0.0000",
+      "note": "3 unabsorbed pixels out of 26 dominant pixels = 0.1154; Stage 1 and Stage 3 both cite this value correctly."
+    },
+    {
+      "check_id": "V5",
+      "description": "Each post_outage_load_factor within +/-0.05 of pre-computed value",
+      "result": "PASS",
+      "expected": "USID_27=0.013, USID_29=0.011, USID_41=0.012, USID_37=0.005, USID_31=0.008",
+      "found": "Stage 1 cites: USID_27=0.013, USID_29=0.011, USID_41=0.012, USID_37=0.005, USID_31=0.008 — exact match, all delta=0.000",
+      "note": "All load factors well below 0.05, making the tolerance criterion trivially satisfied. Values are verbatim from preprocessing."
+    },
+    {
+      "check_id": "V6",
+      "description": "Each absorption_fraction_of_target within +/-0.02 of pre-computed value",
+      "result": "PASS",
+      "expected": "USID_27=0.6154, USID_29=0.4231, USID_41=0.3462, USID_37=0.2692, USID_31=0.0769",
+      "found": "Stage 1 cites: USID_27=0.6154, USID_29=0.4231, USID_41=0.3462, USID_37=0.2692, USID_31=0.0769 — exact match, all delta=0.0000",
+      "note": "Values match overlap_info overlap_fraction values exactly (also equal to absorption_fraction_of_target in preprocessing)."
+    },
+    {
+      "check_id": "V7",
+      "description": "overload_risk labels match thresholds (>0.8=high, >0.5=medium, else low)",
+      "result": "PASS",
+      "expected": "All five backups = low (all post_outage_load_factors < 0.02, far below 0.5 threshold)",
+      "found": "Stage 1 assigns overload_risk=low to all five backups. Pre-computed values: USID_27=0.013, USID_29=0.011, USID_41=0.012, USID_37=0.005, USID_31=0.008 — all < 0.5 → low is correct.",
+      "note": "No marginal cases; all values are more than an order of magnitude below the medium-risk threshold."
+    },
+    {
+      "check_id": "V8",
+      "description": "sinr_regime_impact_note matches preprocessing per_backup sinr_regime_impact_note",
+      "result": "PASS",
+      "expected": "USID_27=mixed, USID_29=mostly_mild, USID_41=mixed, USID_37=mixed, USID_31=mostly_mild",
+      "found": "Stage 1 per_backup cites: USID_27=mixed, USID_29=mostly_mild, USID_41=mixed, USID_37=mixed, USID_31=mostly_mild — exact match with preprocessing per_backup entries",
+      "note": "All five SINR regime labels verified against preprocessing load_redistribution.per_backup[usid].sinr_regime_impact_note."
+    },
+    {
+      "check_id": "V9",
+      "description": "Stage 2 capacity_scores match pre-computed capacity_summary within +/-0.5",
+      "result": "PASS",
+      "expected": "USID_00=25.6, USID_27=23.4, USID_29=25.6, USID_41=15.6, USID_37=25.6, USID_31=22.4",
+      "found": "Stage 2 cites: USID_00=25.6, USID_27=23.4, USID_29=25.6, USID_41=15.6, USID_37=25.6, USID_31=22.4 — exact match, all delta=0.0",
+      "note": "All capacity scores read verbatim from preprocessing capacity_summary; no recomputation was performed."
+    },
+    {
+      "check_id": "V10",
+      "description": "Tower types match height rules (<25m=micro, 25-45m=macro, >45m=tall_macro)",
+      "result": "PASS",
+      "expected": "USID_00: 40m → macro; USID_27: 20m → micro; USID_29: 40m → macro; USID_41: 35m → macro; USID_37: 40m → macro; USID_31: 48m → tall_macro",
+      "found": "Stage 2 assigns: USID_00=macro(40m ✓), USID_27=micro(20m ✓), USID_29=macro(40m ✓), USID_41=macro(35m ✓), USID_37=macro(40m ✓), USID_31=tall_macro(48m ✓) — all correct",
+      "note": "All heights verified against usid_attributes.csv and capacity_summary.tower_height_m. No boundary ambiguity: 45m boundary not hit by any site in this set."
+    },
+    {
+      "check_id": "V11",
+      "description": "If C1 triggered (hole_fraction < 0.05 AND all overload_risk = low): level <= 2",
+      "result": "PASS",
+      "expected": "C1 NOT triggered: hole_fraction = 0.1154 > 0.05; C1 condition not met",
+      "found": "Stage 4 constraint_check.C1_applied = false; user_impact_level = 1 ≤ 2 — no violation. C1 is not triggered so no constraint applies; however the level is still ≤ 2.",
+      "note": "C1 requires BOTH conditions: hole_fraction < 0.05 AND all overload_risk = low. The hole_fraction condition fails (0.1154 > 0.05), so C1 correctly not applied."
+    },
+    {
+      "check_id": "V12",
+      "description": "If C2 triggered (any is_critical_infrastructure = true): level >= 3",
+      "result": "PASS",
+      "expected": "C2 NOT triggered: no is_critical_infrastructure = true found in Stage 3 impact_zones",
+      "found": "Stage 3 lists 5 impact zones; all have is_critical_infrastructure = false. Stage 4 C2_applied = false; user_impact_level = 1. No violation.",
+      "note": "Real map visual assessment found no hospitals, emergency services, or transit hubs within USID_00's dominance area — C2 correctly not triggered."
+    },
+    {
+      "check_id": "V13",
+      "description": "If C3 triggered (dominant_area_impact_regime = mostly_mild): severity adjusted down one level",
+      "result": "PASS",
+      "expected": "C3 triggered: dominant_area_impact_regime = mostly_mild. Initial level = 2 (holes 5-20%). After C3: level should be 2-1 = 1.",
+      "found": "Stage 4 C3_applied = true; user_impact_level = 1. Severity reduced from initial 2 (coverage holes 5-20%) to 1 after C3 — correctly applied.",
+      "note": "dominant_area_impact_regime = mostly_mild confirmed in preprocessing load_redistribution.dominant_area_impact_regime and Stage 1 output. The one-level reduction from Level 2 to Level 1 is arithmetically verified."
+    },
+    {
+      "check_id": "V14",
+      "description": "If C4 triggered (load_redistribution_verdict = overloaded): severity adjusted up one level",
+      "result": "PASS",
+      "expected": "C4 NOT triggered: load_redistribution_verdict = adequate",
+      "found": "Stage 1 load_redistribution_verdict = adequate. Stage 4 C4_applied = false — correct, no upward adjustment made.",
+      "note": "All post_outage_load_factors < 0.015 (well below 0.5 threshold); verdict = adequate confirmed by Stage 1 reasoning."
+    },
+    {
+      "check_id": "V15",
+      "description": "Stage 4 level consistent with Stage 1 + Stage 3 combined evidence",
+      "result": "PASS",
+      "expected": "User impact Level 1 (low severity) consistent with: mostly_mild regime (Stage 1), adequate redistribution (Stage 1), no critical infra (Stage 3), residential suburban geography (Stage 3), 11.54% holes mitigated to 'moderate' zone-level impact only",
+      "found": "Stage 4 assigns user_impact_level=1 (Minimal), impact_severity=low. Stage 1 confirms: all overload=low, mostly_mild regime, adequate verdict. Stage 3 confirms: no critical infra, residential land use, moderate zone impact limited to 3-pixel southern fringe. Level 1 is consistent with the combined evidence — the sole Level 2 indicator (holes 5-20%) is appropriately offset by the C3 reduction.",
+      "note": "Cross-stage consistency verified: the Level 1 outcome is the correct synthesis of Stage 1 (adequate redistribution, mostly_mild) + Stage 3 (no critical infra, residential suburban) with C3 applied."
+    }
+  ],
+  "critical_failures": [],
+  "recommendations": [
+    "No critical failures identified. The assessment result is verified and trustworthy.",
+    "The 11.54% coverage hole fraction (3 pixels, southern fringe) should be monitored operationally — if these pixels are later found to contain critical user clusters or infrastructure, a re-run of Stages 3–4 with updated land-use data is recommended.",
+    "Consider deploying a temporary cell or boosting USID_41/USID_37 transmit power during the shutdown window to address the southern fringe coverage gap.",
+    "V2/V3 role confidence is uniformly 'low' for all USIDs due to small dominant fractions — this is a network topology characteristic, not an analysis defect. Role confidence could be improved with traffic/user count data."
+  ],
+  "verified_final_rating": {
+    "user_impact_level": 1,
+    "impact_severity": "low",
+    "is_verified": true
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "area_overview": {
+    "geographic_character": "suburban",
+    "map_explains_signal_patterns": true,
+    "key_geographic_observations": [
+      "Real map shows a dense suburban street grid throughout the USID_00 coverage area (~33.023N, -96.703W), consistent with the Garland/Richardson suburban corridor of Dallas Metro.",
+      "Major N-S arterial road (thick gray line) visible on the western side of the map (~lon -96.717) — outside USID_00's dominance boundary and not intersecting the target footprint.",
+      "No hospital symbols, large commercial footprints, or expressway infrastructure identifiable within or immediately adjacent to USID_00's 26-pixel boundary.",
+      "Green area visible in the upper-right of the real map (east of ~-96.695) consistent with a park or open space — outside USID_00's footprint but explains lower density in the eastern backup zone served by USID_29/37."
+    ]
+  },
+  "impact_zones": [
+    {
+      "zone_name": "residential NW",
+      "location": "NW/center quadrant, inner portion of USID_00 dominance boundary",
+      "signal_condition": "strong",
+      "sinr_regime": "interference_limited",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "low",
+      "evidence": {
+        "signal_evidence": "USID_27 rsrp_in_zone_p50 = -57.6 dBm (preprocessing per_backup) — well above -80 dBm strong threshold; 100% of absorbed pixels above good. RSRP_USID_27 image confirms deep blue throughout the W/center overlap with USID_00's red-dashed boundary.",
+        "sinr_evidence": "Three-signal classification — Signal 1 (replaceability): USID_27 easy_gap_fraction = 0.5625 vs hard_gap_fraction = 0.0625; easy_gap dominates (ratio 9:1) → replaceability = easy. Signal 2 (environment): USID_00 rsrp_p50 = -57.0 dBm > -90 dBm → environment = good. Signal 3 (SINR): target_dom_low_sinr_fraction = 0.6923 > 0.30 → sinr = low. RULE 2 applies (easy + good + low) → interference_limited. Visual confirmation: SINR map shows predominantly cyan-blue tones inside the red contour in the NW sub-zone, consistent with 69.2% low-SINR fraction. Preprocessing regime_interference_limited_fraction for USID_27 = 0.5625.",
+        "geographic_evidence": "Regular residential street grid visible in the NW sector of the real map — uniform block pattern with no hospital, commercial, or highway features identifiable.",
+        "load_evidence": "USID_27 overload_risk = low, post_outage_load_factor = 0.013 (Stage 1)."
+      },
+      "user_relevance": "high"
+    },
+    {
+      "zone_name": "residential SE",
+      "location": "E/SE quadrant, inner-to-outer USID_00 dominance boundary",
+      "signal_condition": "strong",
+      "sinr_regime": "interference_limited",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "low",
+      "evidence": {
+        "signal_evidence": "USID_29 rsrp_in_zone_p50 = -58.83 dBm (preprocessing per_backup) — well above -80 dBm strong threshold; 100% above good. RSRP_USID_29 image confirms deep blue across the E/center of USID_00's red-dashed boundary.",
+        "sinr_evidence": "Three-signal classification — Signal 1 (replaceability): USID_29 easy_gap_fraction = 0.6364 vs hard_gap_fraction = 0.0909; easy_gap dominates (ratio 7:1) → replaceability = easy. Signal 2 (environment): USID_00 rsrp_p50 = -57.0 dBm → good. Signal 3 (SINR): dom_low_sinr_fraction = 0.6923 > 0.30 → low. RULE 2 applies → interference_limited. SINR map shows cyan-blue tones in the SE sub-zone inside the red contour. Preprocessing regime_interference_limited_fraction for USID_29 = 0.6364.",
+        "geographic_evidence": "Continuous residential suburban grid visible in the center and SE sector of the real map under USID_00's boundary — same block pattern as the NW zone; no commercial or critical infrastructure visible.",
+        "load_evidence": "USID_29 overload_risk = low (0.011); USID_37 overload_risk = low (0.005) — Stage 1."
+      },
+      "user_relevance": "high"
+    },
+    {
+      "zone_name": "residential S",
+      "location": "S/SW edge, outer boundary of USID_00 dominance area — coverage hole",
+      "signal_condition": "very_weak",
+      "sinr_regime": "mixed",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "high",
+      "evidence": {
+        "signal_evidence": "No backup signal reaches this zone — grey pixels visible at the S/SW edge of the RSRP_USID_00 image below the flat southern portion of the yellow boundary. coverage_hole_fraction = 0.1154 (3 of 26 pixels, from preprocessing). Classified very_weak per coverage hole rule (no backup at all).",
+        "sinr_evidence": "Three-signal classification cannot be applied — no backup exists for this zone. sinr_regime defaults to mixed. For reference: SINR map shows cyan-blue tones at the S edge of the red contour; target_dom_low_sinr_fraction = 0.6923 and target_dom_high_sinr_fraction = 0.1538.",
+        "geographic_evidence": "Residential street grid continues uninterrupted into the S/SW sector of the real map with no change in land character — same block pattern south of USID_00's tower position confirms residential classification.",
+        "load_evidence": "No backup available — no handover target; coverage hole confirmed by preprocessing coverage_hole_fraction = 0.1154."
+      },
+      "user_relevance": "high"
+    }
+  ],
+  "coverage_hole_geographic_assessment": {
+    "hole_fraction": 0.1154,
+    "hole_location_description": "Grey pixels at the S/SW fringe of USID_00's yellow dominance boundary in the RSRP_USID_00 image. The flat southern edge of the yellow boundary at ~lat 33.022 marks the handover boundary below which no neighbor's signal reaches.",
+    "land_use_in_hole_area": "residential",
+    "user_impact_of_holes": "high"
+  },
+  "load_geographic_context": {
+    "primary_backup_area_character": "USID_27 is a micro tower (~33.027, -96.707) NW of USID_00 serving the same dense suburban residential fabric. High-band-only (2600/3500 MHz), 5G-capacity-fill profile; compact own dominance zone collocated with the same residential land use as USID_00.",
+    "backup_serves_same_critical_areas": true,
+    "notes": "No critical infrastructure identified in USID_00's dominance area or primary backup area. All three zones share the same residential suburban character. USID_29 and USID_37 (both 40m macro, 4-band) serve the E residential area with equivalent quality."
+  },
+  "key_findings_for_stage4": [
+    "Both covered zones (NW and SE) classify as interference_limited via RULE 2 of the three-signal method — USID_27 easy_gap=0.5625 and USID_29 easy_gap=0.6364 confirm backups were already competitive pre-outage; practical service quality drop is low despite high user relevance.",
+    "11.54% coverage hole at the S/SW residential edge is the sole HIGH-severity zone — complete signal loss for 3 pixels of residential area with no handover target for the full 4-hour window.",
+    "No critical infrastructure identified in any zone — C2 escalation is not triggered.",
+    "USID_41 covers the N/NW arc (34.6%) with a 4G-dominant profile — users in this sub-zone may experience 5G-to-4G downgrade, but in-zone RSRP is strong (-58.5 dBm) and overload risk is low.",
+    "Interference_limited classification across 88.46% of the target area is directly consistent with preprocessing dominant_area_mild_fraction = 1.0 — confirming C3 applies in Stage 4."
+  ],
+  "uncertainty": {
+    "level": "low",
+    "reasons": [
+      "Real map available — land use from visible street grid patterns, not inferred from signal.",
+      "Three-signal sinr_regime fully grounded in preprocessing fractions (easy_gap, hard_gap, rsrp_p50, dom_low_sinr_fraction) with SINR map visual confirmation.",
+      "Signal condition thresholds applied mechanically from per_backup rsrp_in_zone_p50_dbm values.",
+      "Residual uncertainty: exact sub-pixel land use within the 3-pixel hole — classified residential from continuous grid pattern with no conflicting map evidence."
+    ]
+  }
+}

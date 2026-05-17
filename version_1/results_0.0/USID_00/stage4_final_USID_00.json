@@ -1,0 +1,66 @@
+{
+  "target_usid": "USID_00",
+  "shutdown_start": "2024-03-15 08:00",
+  "shutdown_end": "2024-03-15 12:00",
+  "shutdown_duration_hours": 4.0,
+  "overall_rating": {
+    "impact_severity": "low",
+    "user_impact_level": 1,
+    "summary_label": "Minimal — interference-limited regime with adequate neighbor coverage",
+    "confidence": "medium"
+  },
+  "impact_breakdown": {
+    "radio_degradation_risk":   "low",
+    "service_degradation_risk": "low",
+    "user_facing_impact_risk":  "low",
+    "load_redistribution_risk": "low",
+    "5g_downgrade_risk":        "none"
+  },
+  "constraint_check": {
+    "C1_applied": false,
+    "C2_applied": false,
+    "C3_applied": true,
+    "C4_applied": false,
+    "C5_applied": false
+  },
+  "most_affected_zones": [
+    {
+      "zone_name": "Southern Fringe — Coverage Hole Zone",
+      "location": "South — lat 33.020–33.022, lon -96.706 to -96.702",
+      "impact_severity": "moderate",
+      "primary_cause": ["coverage_loss"],
+      "user_relevance": "medium"
+    },
+    {
+      "zone_name": "Core Residential Dominance Area",
+      "location": "Center — USID_00 main dominance footprint, lat 33.022–33.026",
+      "impact_severity": "low",
+      "primary_cause": ["quality_degradation"],
+      "user_relevance": "high"
+    }
+  ],
+  "main_reasons": [
+    "C3 applied: dominant_area_impact_regime = mostly_mild (69.2% of dominant pixels have low SINR < 5 dB from preprocessing), indicating backups are already near-equal in signal strength — initial Level 2 (holes 5–20%) reduced to Level 1.",
+    "Coverage hole fraction of 11.54% (3 out of 26 dominant pixels, from preprocessing) is the primary risk factor — these southern-fringe pixels have no identified backup and will lose service during the 4-hour window.",
+    "All five backup USIDs report overload_risk = low, with post-outage load factors ranging from 0.005 (USID_37) to 0.013 (USID_27), far below the 0.5 medium-risk threshold — confirming no congestion amplification.",
+    "Primary backup USID_27 absorbs 61.54% of USID_00's dominant pixels with RSRP p50 = -57.6 dBm in zone (Excellent), ensuring the majority of displaced users receive a strong handover signal.",
+    "4.0-hour sustained shutdown spans the morning peak (08:00–12:00), affecting all active sessions during that period — however, the low severity of impact limits this to service interruption for the 11.54% hole fraction only."
+  ],
+  "mitigating_factors": [
+    "Interference-limited SINR regime (69.2% of dominant pixels) means the majority of USID_00 users are already in a multi-cell environment where backup signals are competitive — the subjective quality change upon handover will be minimal for most users.",
+    "All five neighbor backups provide good handover quality (100% of in-zone pixels above -90 dBm Good threshold across all neighbors), eliminating any handover failure risk.",
+    "5G service continuity fully maintained: primary backup USID_27 carries 8 5G cells (more than USID_00's 6), and all backups have at least 2 5G cells — no NSA downgrade risk identified.",
+    "No critical infrastructure (hospital, emergency hub, transit interchange) identified within USID_00's dominance area from the real map of this suburban residential grid.",
+    "USID_00's edge-limited role (dominant_pixel_fraction = 0.0163, 1.63% of grid) means its absolute footprint impact is small — the majority of the grid area is not directly dependent on USID_00 as dominant server."
+  ],
+  "final_conclusion": "USID_00 is a 5G-dominant edge-limited macro site with a compact dominance footprint (1.63% of grid pixels) in a dense Plano-area suburban residential environment. Its 4-hour shutdown on 2024-03-15 (08:00–12:00) yields a minimal overall impact (Level 1) after applying C3 — the dominant area's interference-limited regime (69.2% of pixels with SINR < 5 dB) means that backup cells, led by micro-site USID_27 at 61.5% absorption with p50 RSRP = -57.6 dBm, already provide competitive signal quality, damping perceived degradation for the majority of users. The primary residual risk is an 11.54% coverage hole fraction (3 pixels) in the southern fringe of the dominance area, which will experience service loss with no identified backup; this zone falls within a suburban residential block with medium user relevance and no critical infrastructure. Load redistribution across all five backup USIDs is negligible (max post-outage load factor 0.013), and 5G service is preserved through all backup options. The 4-hour morning shutdown window affects peak-hour traffic but the low overall severity limits impact to a small sub-set of the network footprint.",
+  "confidence": {
+    "level": "medium",
+    "reasons": [
+      "Coverage hole location and extent (11.54%) is well-defined by preprocessing but the exact land use and user population in those 3 pixels cannot be confirmed without a POI/land-use database.",
+      "All stage 1 and 2 numeric inputs are directly from preprocessing — no extrapolation involved, supporting confidence.",
+      "Stage 3 geographic assessment relied on visual map interpretation for land-use classification; absence of critical infrastructure is inferred rather than formally verified.",
+      "SINR regime classification (mostly_mild) is unambiguous from preprocessing (69.2% low-SINR fraction), supporting the C3 decision with high confidence."
+    ]
+  }
+}

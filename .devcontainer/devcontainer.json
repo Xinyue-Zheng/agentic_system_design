@@ -1,0 +1,32 @@
+{
+  "name": "USID Pipeline",
+  "image": "usid-claude",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "source=/home/xiz23015/anaconda3,target=/opt/anaconda3,type=bind"
+  ],
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "PATH": "/opt/anaconda3/bin:/opt/anaconda3/envs/saint_env/bin:${containerEnv:PATH}"
+  },
+  "customizations": {
+    "vscode": {
+        "extensions": [
+            "ms-python.python",
+            "ms-python.pylint"
+        ],
+        "settings": {
+            "terminal.integrated.defaultProfile.linux": "bash",
+            "terminal.integrated.profiles.linux": {
+                "bash": {
+                    "path": "/bin/bash",
+                    "args": ["--login", "-i"]
+                }
+            },
+            "python.defaultInterpreterPath": "/opt/anaconda3/envs/saint_env/bin/python3"
+        }
+    }
+},
+  "postCreateCommand": "echo 'export PATH=/opt/anaconda3/bin:/opt/anaconda3/envs/saint_env/bin:$PATH' >> ~/.bashrc && echo 'source /opt/anaconda3/etc/profile.d/conda.sh' >> ~/.bashrc && echo 'conda activate saint_env' >> ~/.bashrc"
+}

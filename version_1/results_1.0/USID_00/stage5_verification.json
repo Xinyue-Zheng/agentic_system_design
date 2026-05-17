@@ -1,0 +1,138 @@
+{
+  "verification_summary": {
+    "total_checks": 15,
+    "passed": 15,
+    "failed": 0,
+    "flagged": 0,
+    "overall_result": "PASS"
+  },
+  "checks": [
+    {
+      "check_id": "V1",
+      "description": "Every USID role label matches preprocessing inferred_role",
+      "result": "PASS",
+      "expected": "USID_00=edge-limited, USID_27=edge-limited, USID_29=edge-limited, USID_41=edge-limited, USID_37=edge-limited, USID_31=edge-limited",
+      "found": "USID_00=edge-limited, USID_27=edge-limited, USID_29=edge-limited, USID_41=edge-limited, USID_37=edge-limited, USID_31=edge-limited",
+      "note": "All 6 USIDs match preprocessing inferred_role exactly."
+    },
+    {
+      "check_id": "V2",
+      "description": "Every cited dominant_pixel_fraction within +/-0.01 of pre-computed",
+      "result": "PASS",
+      "expected": "USID_00=0.0163, USID_27=0.0206, USID_29=0.0219, USID_41=0.0125, USID_37=0.0088, USID_31=0.0156",
+      "found": "USID_00=0.0163, USID_27=0.0206, USID_29=0.0219, USID_41=0.0125, USID_37=0.0088, USID_31=0.0156",
+      "note": "All diffs = 0.0000. Exact match for all 6 USIDs."
+    },
+    {
+      "check_id": "V3",
+      "description": "Every cited rsrp_p50_dbm within +/-2 dBm of pre-computed",
+      "result": "PASS",
+      "expected": "USID_00=-57.0, USID_27=-58.58, USID_29=-57.96, USID_41=-53.94, USID_37=-57.28, USID_31=-52.75",
+      "found": "USID_00=-57.0, USID_27=-58.58, USID_29=-57.96, USID_41=-53.94, USID_37=-57.28, USID_31=-52.75",
+      "note": "All diffs = 0.00 dBm. Exact match for all 6 USIDs."
+    },
+    {
+      "check_id": "V4",
+      "description": "coverage_hole_fraction within +/-0.01 of pre-computed",
+      "result": "PASS",
+      "expected": "0.1154",
+      "found": "0.1154",
+      "note": "Exact match. Diff = 0.0000."
+    },
+    {
+      "check_id": "V5",
+      "description": "Each post_outage_load_factor within +/-0.05 of pre-computed",
+      "result": "PASS",
+      "expected": "USID_27=0.013, USID_29=0.011, USID_41=0.012, USID_37=0.005, USID_31=0.008",
+      "found": "USID_27=0.013, USID_29=0.011, USID_41=0.012, USID_37=0.005, USID_31=0.008",
+      "note": "All diffs = 0.0000. Exact match for all 5 backup USIDs."
+    },
+    {
+      "check_id": "V6",
+      "description": "Each absorption_fraction_of_target within +/-0.02 of pre-computed",
+      "result": "PASS",
+      "expected": "USID_27=0.6154, USID_29=0.4231, USID_41=0.3462, USID_37=0.2692, USID_31=0.0769",
+      "found": "USID_27=0.6154, USID_29=0.4231, USID_41=0.3462, USID_37=0.2692, USID_31=0.0769",
+      "note": "All diffs = 0.0000. Exact match for all 5 backup USIDs."
+    },
+    {
+      "check_id": "V7",
+      "description": "overload_risk labels match thresholds (>0.8=high, >0.5=medium, else low)",
+      "result": "PASS",
+      "expected": "All low (all post_outage_load_factors <= 0.013, well below 0.5 threshold)",
+      "found": "All 5 backups: overload_risk=low",
+      "note": "All load factors (0.005–0.013) are far below the 0.5 MEDIUM threshold. Label 'low' is correct for all."
+    },
+    {
+      "check_id": "V8",
+      "description": "sinr_regime_impact_note matches preprocessing per_backup sinr_regime_impact_note",
+      "result": "PASS",
+      "expected": "USID_27=mixed, USID_29=mostly_mild, USID_41=mixed, USID_37=mixed, USID_31=mostly_mild",
+      "found": "USID_27=mixed, USID_29=mostly_mild, USID_41=mixed, USID_37=mixed, USID_31=mostly_mild",
+      "note": "Exact match for all 5 backup USIDs."
+    },
+    {
+      "check_id": "V9",
+      "description": "Stage 2 capacity_scores match pre-computed within +/-0.5",
+      "result": "PASS",
+      "expected": "USID_00=25.6, USID_27=23.4, USID_29=25.6, USID_41=15.6, USID_37=25.6, USID_31=22.4",
+      "found": "USID_00=25.6, USID_27=23.4, USID_29=25.6, USID_41=15.6, USID_37=25.6, USID_31=22.4",
+      "note": "All diffs = 0.00. Exact match for all 6 USIDs. No recomputation was performed."
+    },
+    {
+      "check_id": "V10",
+      "description": "Tower types match height rules (<25m=micro, 25-45m=macro, >45m=tall_macro)",
+      "result": "PASS",
+      "expected": "USID_00=macro(40m), USID_27=micro(20m), USID_29=macro(40m), USID_41=macro(35m), USID_37=macro(40m), USID_31=tall_macro(48m)",
+      "found": "USID_00=macro, USID_27=micro, USID_29=macro, USID_41=macro, USID_37=macro, USID_31=tall_macro",
+      "note": "All 6 tower types correctly derived from height thresholds. No borderline cases."
+    },
+    {
+      "check_id": "V11",
+      "description": "If C1 triggered: level <= 2",
+      "result": "PASS",
+      "expected": "C1 NOT triggered: hole_fraction=0.1154 >= 0.05 (condition requires hole_fraction < 0.05 AND all overload_risk=low)",
+      "found": "C1_applied=false in Stage 4. Level=1.",
+      "note": "C1 correctly not applied. Level constraint irrelevant. Level=1 is consistent."
+    },
+    {
+      "check_id": "V12",
+      "description": "If C2 triggered: level >= 3",
+      "result": "PASS",
+      "expected": "C2 NOT triggered: no is_critical_infrastructure=true in any Stage 3 impact zone",
+      "found": "C2_applied=false in Stage 4. Level=1.",
+      "note": "All 5 Stage 3 zones have is_critical_infrastructure=false. C2 correctly not applied."
+    },
+    {
+      "check_id": "V13",
+      "description": "If C3 triggered: severity adjusted down one level",
+      "result": "PASS",
+      "expected": "C3 triggered (dominant_area_impact_regime='mostly_mild'): initial Level 2 reduced to Level 1",
+      "found": "C3_applied=true in Stage 4. Final level=1 (reduced from initial Level 2 due to 5-20% coverage hole triggering Level 2 baseline).",
+      "note": "Correct application: hole_fraction=0.1154 in 5-20% range → baseline Level 2; C3 ('mostly_mild') reduces by one → Level 1."
+    },
+    {
+      "check_id": "V14",
+      "description": "If C4 triggered: severity adjusted up one level",
+      "result": "PASS",
+      "expected": "C4 NOT triggered: load_redistribution_verdict='adequate' (not 'overloaded')",
+      "found": "C4_applied=false in Stage 4.",
+      "note": "All post_outage_load_factors well below thresholds; load_redistribution_verdict='adequate'. C4 correctly not applied."
+    },
+    {
+      "check_id": "V15",
+      "description": "Stage 4 level consistent with Stage 1 + Stage 3 combined evidence",
+      "result": "PASS",
+      "expected": "Level 1 consistent with: hole_fraction=0.1154 (5-20% → L2 baseline), dominant_area_impact_regime='mostly_mild' (C3 → -1 level), no critical infrastructure (C2 not triggered), all overload_risk=low (no C4), NSA downgrade not flagged (no C5)",
+      "found": "Stage 4 user_impact_level=1, impact_severity='low'. Constraint chain: L2 baseline → C3 → L1. Consistent with Stage 1 load verdict='adequate', Stage 3 no critical infra, all Stage 1 backup overload_risk=low.",
+      "note": "Full chain of evidence from Stage 1 and Stage 3 is internally consistent with the Stage 4 conclusion. No contradictions detected."
+    }
+  ],
+  "critical_failures": [],
+  "recommendations": [],
+  "verified_final_rating": {
+    "user_impact_level": 1,
+    "impact_severity": "low",
+    "is_verified": true
+  }
+}

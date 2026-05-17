@@ -1,0 +1,17 @@
+import json
+with open('artifacts/TKT-2026-04-17-0002_20260507T091321Z/kpi_agent_artifact.json') as f:
+    a = json.load(f)
+print('Top-level keys:', list(a.keys()))
+print('sustained_pressure_verdict:', a['sustained_pressure_verdict'])
+print('peak_hour_verdict:', a['peak_hour_verdict'])
+print('overload_risk:', a['overload_risk'])
+print('overload_risk_base:', a['overload_risk_base'])
+print('overload_risk_stress:', a['overload_risk_stress'])
+print('hourly_dist base:', a['hourly_distribution']['base'])
+print('hourly_dist stress:', a['hourly_distribution']['stress'])
+print('sustained_reasoning_log count:', len(a['sustained_reasoning_log']))
+print('hourly_neighbor_forecast neighbors:', list(a['hourly_neighbor_forecast'].keys()))
+print('USID_01 H19:', a['hourly_neighbor_forecast']['USID_01']['19:00'])
+print('peak_derivation:', a['peak_derivation'])
+print('trend_detail:', a['trend_detail'])
+print('File size:', len(json.dumps(a)), 'chars')

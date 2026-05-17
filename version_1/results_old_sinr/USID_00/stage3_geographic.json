@@ -1,0 +1,89 @@
+{
+  "area_overview": {
+    "geographic_character": "suburban",
+    "map_explains_signal_patterns": true,
+    "key_geographic_observations": [
+      "The real map shows a dense suburban street grid throughout the USID_00 coverage area (lat 33.020-33.027, lon -96.706 to -96.700), consistent with a Texas suburban residential neighborhood in the Garland/Richardson metro area.",
+      "A major N-S arterial road is visible on the western portion of the map (~lon -96.717), outside USID_00's dominance boundary — it does not intersect the target's dominant area.",
+      "The USID_00 dominance area itself sits within a uniform residential grid with no identifiable hospital symbols, large institutional footprints, or expressway infrastructure visible at or within its 26-pixel boundary.",
+      "Upper-right of map shows a possible green/park area (east of USID_00's boundary), consistent with the suburban residential character of the target zone having low-to-no commercial density directly under the tower."
+    ]
+  },
+  "impact_zones": [
+    {
+      "zone_name": "residential NW",
+      "location": "NW quadrant, inner portion of USID_00 dominance boundary",
+      "signal_condition": "strong",
+      "sinr_regime": "mixed",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "negligible",
+      "evidence": {
+        "signal_evidence": "USID_27 rsrp_in_zone_p50 = -57.6 dBm (from preprocessing per_backup), well above the strong threshold of -80 dBm; 100% of absorbed pixels above good in zone.",
+        "sinr_evidence": "SINR map shows a mix of green and some yellow/orange pixels in the NW portion of the red contour — consistent with target_dom_high_sinr_fraction = 0.1538 (15.4% noise-limited patches) and target_dom_low_sinr_fraction = 0.6923 (69.2% interference-limited); classified as mixed because neither fraction is clearly dominant at the NW subzone scale.",
+        "geographic_evidence": "Regular residential street grid visible in the NW sector of the real map corresponding to this zone — uniform block pattern with no hospital symbols, commercial footprints, or highway infrastructure visible.",
+        "load_evidence": "USID_27 overload_risk = low, post_outage_load_factor = 0.013 (from Stage 1)."
+      },
+      "user_relevance": "high"
+    },
+    {
+      "zone_name": "residential SE",
+      "location": "SE/center quadrant, inner-to-outer USID_00 dominance boundary",
+      "signal_condition": "strong",
+      "sinr_regime": "interference_limited",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "negligible",
+      "evidence": {
+        "signal_evidence": "USID_29 rsrp_in_zone_p50 = -58.83 dBm and USID_37 rsrp_in_zone_p50 = -58.71 dBm (from preprocessing per_backup) — both well above -80 dBm strong threshold; 100% of pixels above good in zone for both.",
+        "sinr_evidence": "SINR map shows predominant cyan-blue tones in the SE/center portion of the red contour, consistent with target_dom_low_sinr_fraction = 0.6923 (69.2% of dominant area is interference-limited, SINR < 5 dB); classified as interference_limited for this eastern subzone.",
+        "geographic_evidence": "Continued uniform residential street grid visible in the center and SE sector of the real map under USID_00's boundary — same block pattern as NW zone, no distinguishing commercial or critical infrastructure visible.",
+        "load_evidence": "USID_29 overload_risk = low (post_outage_load_factor = 0.011); USID_37 overload_risk = low (post_outage_load_factor = 0.005) — from Stage 1."
+      },
+      "user_relevance": "high"
+    },
+    {
+      "zone_name": "residential S",
+      "location": "S/SW edge, outer boundary of USID_00 dominance area (coverage hole zone)",
+      "signal_condition": "very_weak",
+      "sinr_regime": "mixed",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "high",
+      "evidence": {
+        "signal_evidence": "No backup USID reaches this zone — grey pixels visible at the S/SW edge of the RSRP_USID_00 image outside the yellow dominance boundary; coverage_hole_fraction = 0.1154 (3 of 26 dominant pixels). Classified very_weak per coverage hole rule (no backup at all).",
+        "sinr_evidence": "SINR map shows the S/SW fringe of the red contour in cyan-blue tones, consistent with interference-limited regime; target_dom_low_sinr_fraction = 0.6923 supports this classification. Classified as mixed for the specific hole pixels given uncertainty at the exact fringe location.",
+        "geographic_evidence": "Continuous residential street grid extends into the S/SW sector of the real map — the same block pattern and road network continues south of USID_00's tower position with no change in land character visible, confirming residential classification.",
+        "load_evidence": "No applicable backup for this zone — no handover target available. Coverage hole confirmed by preprocessing coverage_hole_fraction = 0.1154."
+      },
+      "user_relevance": "high"
+    }
+  ],
+  "coverage_hole_geographic_assessment": {
+    "hole_fraction": 0.1154,
+    "hole_location_description": "Grey pixels visible at the S/SW fringe of the USID_00 RSRP image, just outside and partially overlapping the southern edge of the yellow dominance boundary. These 3 pixels represent the southernmost portion of USID_00's dominant area where none of the five neighbor USIDs (USID_27 NW, USID_29 ESE, USID_41 S, USID_37 SE, USID_31 S) extend sufficient signal.",
+    "land_use_in_hole_area": "residential",
+    "user_impact_of_holes": "high"
+  },
+  "load_geographic_context": {
+    "primary_backup_area_character": "USID_27 is a micro tower to the NW (~33.027, -96.707) serving the same dense suburban residential area. Its micro form factor (20m height, 2-band) means its own dominance zone is compact and co-located with the residential fabric — it is not a coverage anchor but a capacity fill node in the same neighborhood.",
+    "backup_serves_same_critical_areas": true,
+    "notes": "No critical infrastructure (hospital, expressway) was identified in USID_00's dominance area or the primary backup's area. Both serve the same residential suburban character. Secondary backups USID_29 and USID_37 (both 40m macro, full 4-band) extend coverage to the SE residential areas and would absorb traffic from those portions cleanly."
+  },
+  "key_findings_for_stage4": [
+    "The 11.54% coverage hole (3 pixels) is located at the S/SW residential edge of USID_00's boundary — these residents will have no handover target during the 4-hour shutdown window, representing the primary user-facing impact.",
+    "88.46% of USID_00's dominant area is covered by backup USIDs with strong signal (all in-zone RSRP > -57 dBm), interference-limited SINR regime, and negligible load impact — impact is negligible for the vast majority of affected users.",
+    "No critical infrastructure (hospital, major highway/expressway) was identified in or adjacent to USID_00's dominance area from the real map; there is no critical severity escalation driver.",
+    "The suburban residential character throughout the target area means user_relevance is uniformly high — all residents in the 11.54% hole area will experience complete coverage loss, while the remaining 88.46% will experience a transparent handover.",
+    "The predominantly interference-limited SINR regime (69.2% low SINR) within the target area means backup signals were already competitive pre-outage, confirming the mostly_mild impact character for covered zones."
+  ],
+  "uncertainty": {
+    "level": "low",
+    "reasons": [
+      "Real map was available — all land use classifications are based on visible map features (street grid pattern, block shapes), not inferred from signal data.",
+      "All signal_condition classifications directly cite per_backup rsrp_in_zone_p50_dbm values from preprocessing.",
+      "SINR regime classifications cite specific preprocessing fractions (high_sinr_fraction=0.1538, low_sinr_fraction=0.6923).",
+      "The only remaining uncertainty is the precise land use of the 3 coverage hole pixels at the S/SW edge — identified as residential from the continuous street grid pattern visible in the real map, with no conflicting evidence."
+    ]
+  }
+}

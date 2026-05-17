@@ -1,0 +1,130 @@
+{
+  "usids": [
+    {
+      "usid": "USID_00",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0163,
+      "rsrp_p50_dbm": -57.0,
+      "rsrp_spatial_pattern": "Compact dominance footprint centered at lat 33.023, lon -96.704. Uniformly excellent RSRP (deep blue, all pixels above -80 dBm) throughout the dominance boundary. Signal transitions to good/moderate (green, approx -65 to -75 dBm) in NW and NE fringe backup pixels outside the yellow boundary. No areas drop below -80 dBm within the dominant zone."
+    },
+    {
+      "usid": "USID_27",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0206,
+      "rsrp_p50_dbm": -58.58,
+      "rsrp_spatial_pattern": "Dominates NW quadrant relative to USID_00. In USID_00's dominant area (red dashed boundary), provides excellent coverage (deep blue) across the N and center-W portions, transitioning to good (teal/green, approx -70 to -80 dBm) toward the SE edge of USID_00's footprint. Coverage gap observed in southern fringe of USID_00 where USID_27 signal does not reach strongly."
+    },
+    {
+      "usid": "USID_29",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0219,
+      "rsrp_p50_dbm": -57.96,
+      "rsrp_spatial_pattern": "Dominates E/SE sector. In USID_00's area, provides excellent signal (blue) in the E and NE pixels but degrades to good/moderate (green-yellow, approx -65 to -75 dBm) in the W portion of USID_00's boundary. USID_29's own dominance zone lies entirely E of USID_00, so coverage of USID_00's W side is weaker."
+    },
+    {
+      "usid": "USID_41",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0125,
+      "rsrp_p50_dbm": -53.94,
+      "rsrp_spatial_pattern": "Dominates SW/S area. In USID_00's footprint (red dashed), signal is excellent (deep blue) in center-S pixels overlapping the lower half of USID_00's boundary. Signal weakens to good (teal, approx -65 dBm) at N edge of overlap. USID_41 dominance zone lies south of USID_00, limiting its reach into USID_00's northern pixels."
+    },
+    {
+      "usid": "USID_37",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0088,
+      "rsrp_p50_dbm": -57.28,
+      "rsrp_spatial_pattern": "Dominates S sector. Dominance zone centered at lat 33.021, lon -96.699, touching only the SW corner of USID_00's boundary (7 overlapping pixels). Within those pixels, RSRP is excellent (blue). Coverage of USID_00's N and W quadrants is absent from USID_37."
+    },
+    {
+      "usid": "USID_31",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0156,
+      "rsrp_p50_dbm": -52.75,
+      "rsrp_spatial_pattern": "Dominates SE quadrant, centered at lat 33.019, lon -96.702. Very minimal overlap with USID_00's footprint (only 2 pixels at the far S edge of USID_00's area). RSRP in overlap zone is excellent (deep blue). USID_31 offers negligible geographic reach into USID_00's dominant area."
+    }
+  ],
+  "target_load_analysis": {
+    "target_usid": "USID_00",
+    "dominant_area_impact_regime": "mostly_mild",
+    "coverage_hole_fraction": 0.1154,
+    "coverage_hole_assessment": "11.54% of USID_00's 26 dominant pixels (approximately 3 pixels) have no adequate backup coverage. These unserved pixels represent the most vulnerable zone in the northern fringe of USID_00's dominant area, where neither USID_27 nor any other neighbor provides sufficient signal strength. Users in this area face a true coverage gap during the shutdown.",
+    "per_backup": [
+      {
+        "backup_usid": "USID_27",
+        "absorption_fraction_of_target": 0.6154,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -57.6,
+        "sinr_regime_impact_note": "mixed",
+        "post_outage_load_factor": 0.013,
+        "overload_risk": "low",
+        "assessment": "USID_27 is the primary backup, absorbing 61.54% of USID_00's dominant pixels with good handover quality (rsrp_p50=-57.6 dBm, 100% above good threshold). Post-outage load factor of 0.013 is negligible, confirming no overload risk; however, the mixed SINR regime means a portion of handed-over users will experience quality degradation compared to their current USID_00 service."
+      },
+      {
+        "backup_usid": "USID_29",
+        "absorption_fraction_of_target": 0.4231,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -58.83,
+        "sinr_regime_impact_note": "mostly_mild",
+        "post_outage_load_factor": 0.011,
+        "overload_risk": "low",
+        "assessment": "USID_29 absorbs 42.31% of target pixels with good handover quality (rsrp_p50=-58.83 dBm, 100% above good) and a mostly_mild SINR regime impact, meaning backup signal is already competitive. Post-outage load factor of 0.011 is well below all risk thresholds, making this a reliable E/SE sector backup."
+      },
+      {
+        "backup_usid": "USID_41",
+        "absorption_fraction_of_target": 0.3462,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -58.5,
+        "sinr_regime_impact_note": "mixed",
+        "post_outage_load_factor": 0.012,
+        "overload_risk": "low",
+        "assessment": "USID_41 absorbs 34.62% of target pixels, providing good coverage in the center-S portion of USID_00's area (rsrp_p50=-58.5 dBm). Mixed SINR regime indicates partial signal quality degradation for handed-over users. Load impact is negligible at 0.012."
+      },
+      {
+        "backup_usid": "USID_37",
+        "absorption_fraction_of_target": 0.2692,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -58.71,
+        "sinr_regime_impact_note": "mixed",
+        "post_outage_load_factor": 0.005,
+        "overload_risk": "low",
+        "assessment": "USID_37 absorbs 26.92% of target pixels (7 pixels in SW corner) with good signal (rsrp_p50=-58.71 dBm). Mixed SINR regime applies. Post-outage load factor of 0.005 is the lowest among all backups, confirming no congestion risk from this neighbor."
+      },
+      {
+        "backup_usid": "USID_31",
+        "absorption_fraction_of_target": 0.0769,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -57.54,
+        "sinr_regime_impact_note": "mostly_mild",
+        "post_outage_load_factor": 0.008,
+        "overload_risk": "low",
+        "assessment": "USID_31 absorbs only 7.69% of target pixels (2 pixels at far S edge) with excellent signal quality (rsrp_p50=-57.54 dBm) and mostly_mild SINR impact. Contribution is minor due to minimal geographic overlap; no overload risk with post_outage_load_factor=0.008."
+      }
+    ],
+    "load_redistribution_verdict": "adequate",
+    "verdict_reasoning": [
+      "All five backup USIDs show post_outage_load_factor well below 0.5 (range: 0.005–0.013), placing every neighbor firmly in the LOW overload risk category.",
+      "USID_27 absorbs the largest share (61.54%) yet reaches only load factor 0.013, demonstrating substantial spare capacity across the neighbor ring.",
+      "However, coverage_hole_fraction=0.1154 (3 of 26 dominant pixels) indicates that despite adequate load distribution, 11.54% of USID_00's dominant area has no quality backup, representing a localized service gap."
+    ]
+  },
+  "key_findings_for_stage3": [
+    "Coverage holes (11.54%) are located at the northern fringe of USID_00's dominant area, where no neighbor provides adequate signal — visible as the NW gap between USID_00 and USID_27's dominance zones in the neighborhood map.",
+    "USID_00's RSRP signal is uniformly excellent (100% above -80 dBm) within its compact dominance boundary, concentrated in a small central cluster with weak edge-extension pixels to N and NE.",
+    "USID_27 signal degrades in the SE corner of USID_00's area, creating a mixed-quality handover zone in the southern portion of USID_00's boundary.",
+    "USID_31 and USID_37 contribute only to the southernmost 2–7 pixels of USID_00's area, leaving the northern half of the footprint dependent solely on USID_27 and USID_29 for backup."
+  ],
+  "uncertainty": {
+    "level": "medium",
+    "reasons": [
+      "All USID dominant_pixel_fractions are below 0.05, triggering low role confidence for target and all neighbors — small footprints increase sensitivity to pixel-level noise.",
+      "Coverage hole fraction of 11.54% is moderate and its exact geographic location within the small 26-pixel dominance area introduces localization uncertainty.",
+      "SINR regime is 'mostly_mild' for the dominant area but individual pixel SINR values span a wide range (target_dom_high_sinr_fraction=0.154, low=0.692), indicating heterogeneous conditions within the compact footprint."
+    ]
+  }
+}

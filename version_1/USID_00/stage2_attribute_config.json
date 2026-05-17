@@ -1,0 +1,113 @@
+{
+  "usids": [
+    {
+      "usid": "USID_00",
+      "capacity_score": 25.6,
+      "tower_type": "macro",
+      "active_band_count": 4,
+      "technology_profile": "5G-dominant",
+      "operational_role": "mixed",
+      "role_confidence": "medium",
+      "key_observations": [
+        "40m macro with full 4-band stack (700/1800/2600/3500 MHz) provides coverage depth via 700 MHz and 5G peak throughput via 3500 MHz.",
+        "6 5G cells vs 4 4G cells — 5G-dominant with meaningful 4G fallback layer for legacy devices.",
+        "Capacity score 25.6 is tied-highest in the neighborhood alongside USID_29 and USID_37 — well-provisioned for its edge-limited footprint."
+      ]
+    },
+    {
+      "usid": "USID_27",
+      "capacity_score": 23.4,
+      "tower_type": "micro",
+      "active_band_count": 2,
+      "technology_profile": "5G-dominant",
+      "operational_role": "capacity-oriented",
+      "role_confidence": "high",
+      "key_observations": [
+        "20m micro with only 2 bands (2600/3500 MHz — no 700 or 1800 MHz) — high-band-only capacity fill node; no low-band coverage layer limits propagation range.",
+        "8 5G cells vs 2 4G cells is the highest 5G-to-4G ratio in the neighborhood; strongly supports the capacity-oriented operational role.",
+        "Capacity score 23.4 is strong despite micro form factor; however, lack of 700 MHz band reduces resilience in building-penetration or marginal coverage scenarios."
+      ]
+    },
+    {
+      "usid": "USID_29",
+      "capacity_score": 25.6,
+      "tower_type": "macro",
+      "active_band_count": 4,
+      "technology_profile": "5G-dominant",
+      "operational_role": "mixed",
+      "role_confidence": "medium",
+      "key_observations": [
+        "Identical hardware profile to USID_00 (40m macro, 4 bands, 4×4G + 6×5G) — near-perfect configuration substitute for the target site.",
+        "Full 700 MHz low-band ensures coverage continuity even at the outer edge of the handover zone.",
+        "Capacity score 25.6 matches USID_00 exactly — no capacity downgrade for handed-over users."
+      ]
+    },
+    {
+      "usid": "USID_41",
+      "capacity_score": 15.6,
+      "tower_type": "macro",
+      "active_band_count": 2,
+      "technology_profile": "mixed-4G-5G",
+      "operational_role": "mixed",
+      "role_confidence": "medium",
+      "key_observations": [
+        "35m macro with only 2 bands (1800/2600 MHz — no 700 MHz low-band, no 3500 MHz 5G NR band) — legacy mid-band site with minimal 5G investment.",
+        "8 4G cells vs 2 5G cells makes this the most 4G-heavy site; capacity score 15.6 is ~39% below the neighborhood average of ~24.",
+        "Users handed over from USID_00 to USID_41 will likely experience 4G fallback given only 2 5G cells and no 3500 MHz band — a notable service step-down from USID_00's 5G-dominant profile."
+      ]
+    },
+    {
+      "usid": "USID_37",
+      "capacity_score": 25.6,
+      "tower_type": "macro",
+      "active_band_count": 4,
+      "technology_profile": "5G-dominant",
+      "operational_role": "mixed",
+      "role_confidence": "medium",
+      "key_observations": [
+        "Identical hardware profile to USID_00 and USID_29 (40m macro, 4 bands, 4×4G + 6×5G) — third macro-5G site in the neighborhood providing configuration parity.",
+        "Full band diversity including 700 MHz ensures reliable service throughout the handover zone.",
+        "Capacity score 25.6 and 5G-dominant profile mean 5G users from USID_00 find equivalent 5G service with no throughput regression."
+      ]
+    },
+    {
+      "usid": "USID_31",
+      "capacity_score": 22.4,
+      "tower_type": "tall_macro",
+      "active_band_count": 4,
+      "technology_profile": "mixed-4G-5G",
+      "operational_role": "mixed",
+      "role_confidence": "medium",
+      "key_observations": [
+        "48m tall_macro with full 4-band stack (700/1800/2600/3500 MHz) — tallest site in the group, optimized for wide-area coverage propagation.",
+        "6 4G cells vs 4 5G cells — more balanced than USID_41 but still 4G-leaning; partial 5G availability for capable devices via 3500 MHz.",
+        "Capacity score 22.4 is adequate; tall_macro profile makes it a coverage anchor rather than a high-density capacity node."
+      ]
+    }
+  ],
+  "nsa_5g_downgrade_risk": {
+    "flagged": false,
+    "target_5g_cells": 6,
+    "primary_backup_5g_cells": 8,
+    "affected_fraction_estimate": 0.0,
+    "explanation": "Primary backup USID_27 has 8 5G cells — exceeding USID_00's 6 — so no NSA downgrade on the primary handover path. USID_29 and USID_37 also carry 6 5G cells each. Only USID_41 (2 5G cells, 34.6% of target area) and USID_31 (4 5G cells, 7.7%) present partial 5G step-down risk; neither meets the NSA flag trigger condition (primary backup with 0 5G cells)."
+  },
+  "overall_capacity_verdict": "adequate",
+  "capacity_verdict_reasoning": [
+    "Primary backup USID_27 (23.4) and secondary backups USID_29 and USID_37 (both 25.6) have capacity scores at or above USID_00 (25.6), covering the majority of displaced traffic with equivalent or better capacity.",
+    "All post_outage_load_factors ≤ 0.013 (Stage 1) — existing spare capacity at all backup sites is more than sufficient; no site approaches any load risk threshold.",
+    "USID_41's below-average score (15.6) and 4G-dominant profile is a localized concern for ~34.6% of USID_00's area, but its signal quality is strong and load increase is negligible."
+  ],
+  "key_findings_for_stage4": [
+    "No NSA 5G downgrade on the primary handover path — USID_27 carries 8 5G cells, more than USID_00.",
+    "USID_41 presents a localized 5G service step-down for ~34.6% of USID_00's area: 4G-dominant (8×4G, 2×5G), no 3500 MHz, capacity score 15.6 vs 25.6.",
+    "Three of five backup sites (USID_27, USID_29, USID_37) match or exceed USID_00's capacity profile — the neighborhood is well-equipped for this outage."
+  ],
+  "uncertainty": {
+    "level": "low",
+    "reasons": [
+      "All capacity scores read directly from preprocessing capacity_summary — no recomputation.",
+      "All tower types follow strict, unambiguous height thresholds: 20m=micro, 35m/40m=macro, 48m=tall_macro."
+    ]
+  }
+}

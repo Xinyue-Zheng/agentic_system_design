@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ln -s ../planner/reference_document.pdf /workspace/version_4/skills/planner_evaluator/reference_document.pdf)",
+      "Bash(python *)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(wait 1671287)",
+      "Bash(echo \"Pipeline finished \\(exit $?\\)\")",
+      "Bash(python3 /workspace/version_4/mcp_server/server.py --help)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(DATA_DIR=/workspace/version_4/data python3 /workspace/version_4/mcp_server/server.py)",
+      "Bash(python3 -c \"import sys,json; [print\\(r['result'].get\\('serverInfo',{}\\).get\\('name','?'\\), 'tools:', len\\(r['result'].get\\('tools',[]\\)\\)\\) for line in sys.stdin for r in [json.loads\\(line\\)] if 'result' in r]\")",
+      "Bash(python3 -c ' *)",
+      "Bash(claude -p --mcp-config /workspace/version_4/mcp_server/mcp_config.json --allowedTools mcp__telecom_data__get_site_attributes)",
+      "Bash(claude -p --help)",
+      "Bash(claude -p --mcp-config /workspace/version_4/mcp_server/mcp_config.json --allowedTools mcp__telecom_data__get_all_tickets --mcp-debug)",
+      "Bash(claude -p --mcp-config /workspace/version_4/mcp_server/mcp_config.json --strict-mcp-config --mcp-debug)",
+      "Bash(python3 *)",
+      "Bash(claude -p --mcp-config /workspace/version_4/mcp_server/mcp_config.json --strict-mcp-config --allowedTools mcp__telecom_data__get_all_tickets)"
+    ]
+  }
+}

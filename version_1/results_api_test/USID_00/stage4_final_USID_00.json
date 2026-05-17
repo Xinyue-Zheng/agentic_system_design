@@ -1,0 +1,80 @@
+{
+  "target_usid": "USID_00",
+  "shutdown_start": "2024-03-15 08:00",
+  "shutdown_end": "2024-03-15 12:00",
+  "shutdown_duration_hours": 4.0,
+  "overall_rating": {
+    "impact_severity": "moderate",
+    "user_impact_level": 2,
+    "summary_label": "Sustained Coverage Loss with Significant Hard Holes",
+    "confidence": "medium"
+  },
+  "impact_breakdown": {
+    "radio_degradation_risk":   "moderate",
+    "service_degradation_risk": "moderate",
+    "user_facing_impact_risk":  "moderate",
+    "load_redistribution_risk": "low",
+    "5g_downgrade_risk":        "low"
+  },
+  "constraint_check": {
+    "C1_applied": false,
+    "C2_applied": false,
+    "C3_applied": true,
+    "C4_applied": false,
+    "C5_applied": false
+  },
+  "most_affected_zones": [
+    {
+      "zone_name": "Southern Isolated Lobe — Coverage Hole Zone",
+      "location": "Southern fringe, ~33.027-33.029N / -96.693 to -96.691W",
+      "impact_severity": "high",
+      "primary_cause": ["coverage_loss"],
+      "user_relevance": "high"
+    },
+    {
+      "zone_name": "Central Residential Core",
+      "location": "Center of dominant area, ~33.031-33.034N / -96.694 to -96.690W",
+      "impact_severity": "low",
+      "primary_cause": ["quality_degradation"],
+      "user_relevance": "high"
+    },
+    {
+      "zone_name": "Western Margin — Road Corridor Transition",
+      "location": "Western edge, ~33.031-33.033N / -96.697 to -96.694W",
+      "impact_severity": "moderate",
+      "primary_cause": ["coverage_loss", "quality_degradation"],
+      "user_relevance": "medium"
+    },
+    {
+      "zone_name": "Eastern Margin — Backup Handoff Zone",
+      "location": "Eastern edge, ~33.031-33.034N / -96.691 to -96.688W",
+      "impact_severity": "low",
+      "primary_cause": ["quality_degradation"],
+      "user_relevance": "medium"
+    }
+  ],
+  "main_reasons": [
+    "Coverage hole fraction of 0.24 (24% of 50 dominant pixels, 12 pixels absolute) exceeds the Level 3 threshold of >20%, establishing the base impact level at 3 — Significant",
+    "C3 applied: dominant_area_impact_regime = mostly_mild (60% of pixels are interference-limited, SINR mean 5.46 dB) indicates backups were already competitive in USID_00's zone, reducing post-outage signal impact severity — level adjusted down to 2 (Noticeable/Moderate)",
+    "Shutdown duration of 4.0 hours is classified as sustained (1-4h), meaning all users within the dominant zone are affected throughout the entire morning peak traffic window (08:00-12:00)",
+    "The 12 hard coverage-hole pixels have no backup USID — users in this sub-zone (geographically concentrated in the southern lobe based on Stage 3 image analysis) will lose cellular service entirely for 4 hours",
+    "For the 76% of dominant pixels that do have backups, load redistribution is adequate (all post_outage_load_factor <= 0.012, well below the 0.5 medium threshold), and handover quality is 'good' on all backup USIDs (100% of absorbed pixels above -90 dBm)"
+  ],
+  "mitigating_factors": [
+    "All 5 backup USIDs (USID_26, USID_41, USID_30, USID_28, USID_31) provide good handover quality with RSRP p50 in the range -72 to -75 dBm — well above the -90 dBm Good threshold",
+    "Post-outage load factors are extremely low (max 0.012) — no congestion risk on any backup node regardless of absorbed traffic",
+    "USID_00 is edge-limited (dominant_pixel_fraction = 0.013), meaning its total user base is small relative to the network — absolute number of affected users is limited",
+    "No critical infrastructure (hospital, emergency services, transit hub) was identified within USID_00's compact dominant zone from geographic analysis",
+    "NSA 5G downgrade risk is low — while USID_26 has fewer 5G cells (2 vs 6), it still provides some NR service, and USID_28 (same 5G profile as USID_00) absorbs 16% of pixels with no 5G degradation",
+    "SINR regime is mostly_mild: 60% of dominant pixels are interference-limited (<5 dB SINR), meaning backups were already near-dominant before the shutdown — handover will be relatively seamless for the majority of pixels"
+  ],
+  "final_conclusion": "USID_00's shutdown from 08:00 to 12:00 on 2024-03-15 produces a moderate (Level 2) impact driven primarily by a 24% hard coverage hole fraction — 12 of 50 dominant pixels have no backup and will lose service entirely for 4 hours. The impact is kept at Level 2 (rather than Level 3) by the mostly_mild SINR regime (C3 applied), which reflects that backups were already competitive in 60% of USID_00's dominant area, limiting post-handover signal degradation. For the remaining 76% of covered pixels, all five backup USIDs demonstrate adequate capacity (max post_outage_load_factor 0.012) and good handover quality (100% absorbed pixels above -90 dBm RSRP). The geographic focus of the hard holes appears to be the southern isolated lobe of the dominant area (~33.027-33.029N), a dense suburban residential zone in the Plano/Dallas area. No critical infrastructure was identified in the affected footprint. The 4-hour sustained window falls during the morning peak, amplifying user exposure but not changing the structural severity classification.",
+  "confidence": {
+    "level": "medium",
+    "reasons": [
+      "Coverage hole fraction (0.24) and SINR regime (mostly_mild) are pre-computed ground-truth values — constraint application (C3) is deterministic",
+      "Exact spatial distribution of the 12 coverage-hole pixels within the dominant zone is inferred from image analysis, not directly computed — introduces geographic uncertainty",
+      "No critical infrastructure confirmed absent with certainty — real map analysis at street-tile resolution may miss hospitals or emergency facilities within the small 50-pixel footprint"
+    ]
+  }
+}

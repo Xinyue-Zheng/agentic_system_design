@@ -1,0 +1,121 @@
+{
+  "area_overview": {
+    "geographic_character": "suburban",
+    "map_explains_signal_patterns": true,
+    "key_geographic_observations": [
+      "The real map reveals a dense suburban residential grid (Dallas/Richardson TX area, approx lat 33.010-33.037, lon -96.720 to -96.689) with north-south and east-west street networks consistent with even, low-obstruction RSRP propagation across the flat suburban terrain.",
+      "A major north-south highway/freeway corridor (visible on the western edge of the map, consistent with US-75/Central Expressway) runs along the western boundary of the coverage area — this linear infrastructure feature explains the western edge cut-off in USID_00's dominance boundary and the strong USID_27 presence to the NW.",
+      "A diagonal arterial road running NW-SE crosses through the upper-center of the map, passing through the northern fringe of USID_00's dominant area — this corridor aligns spatially with the coverage hole zone (3 pixels, 11.54%) where no backup signal adequately fills.",
+      "A park/green space is visible in the NE quadrant of the real map (upper-right area), consistent with lower user density in that direction and explaining the absence of dominant coverage eastward beyond USID_29's zone.",
+      "The center of the map — where USID_00's compact dominance footprint sits — corresponds to a dense suburban residential block pattern with some commercial strips, indicating moderate-to-high user density during daytime."
+    ]
+  },
+  "impact_zones": [
+    {
+      "zone_name": "NW Fringe Coverage Gap",
+      "location": "North-northwest edge of USID_00 dominant area, along the diagonal arterial road corridor",
+      "signal_condition": "very_weak",
+      "sinr_regime": "mixed",
+      "land_use": "road",
+      "is_critical_infrastructure": false,
+      "impact_severity": "high",
+      "evidence": {
+        "signal_evidence": "Coverage hole fraction = 0.1154 (3 of 26 dominant pixels have no adequate backup); these pixels sit at the NW boundary of USID_00's dominance zone where USID_27's signal reach ends and USID_00's own signal would be absent.",
+        "sinr_evidence": "Target dominant area SINR: mean = 3.7 dB, low-SINR fraction = 0.6923 — interference-limited on average, but the NW fringe is the area where neither USID_27 nor USID_00 fully dominates, creating a true signal void.",
+        "geographic_evidence": "The NW fringe of USID_00's boundary in the dominance map aligns with the diagonal arterial road visible in the upper-center of the real map — road corridor users (vehicular and pedestrian) in this zone will experience complete signal loss during the shutdown.",
+        "load_evidence": "No backup USID absorbs these 3 pixels (they constitute the coverage hole); no load redistribution applies here."
+      },
+      "user_relevance": "medium"
+    },
+    {
+      "zone_name": "Central Residential Core",
+      "location": "Center of USID_00 dominant area, immediately surrounding the tower site at lat 33.023, lon -96.703",
+      "signal_condition": "strong",
+      "sinr_regime": "interference_limited",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "low",
+      "evidence": {
+        "signal_evidence": "USID_00 rsrp_p50 = -57.0 dBm (100% above excellent threshold of -80 dBm); USID_27 rsrp_p50 in this zone = -57.6 dBm — backup signal nearly matches current signal quality.",
+        "sinr_evidence": "Dominant area SINR mean = 3.7 dB, low-SINR fraction = 0.6923 — interference-limited regime means backup cells (USID_27, USID_29) are already competing strongly with USID_00; dominant_area_impact_regime = 'mostly_mild'.",
+        "geographic_evidence": "Real map shows this zone as dense residential street grid — individual homes and small lots with moderate user density; flat terrain with no major obstructions consistent with the excellent RSRP values observed.",
+        "load_evidence": "USID_27 post_outage_load_factor = 0.013 (low risk) — primary backup can absorb central zone users with no congestion."
+      },
+      "user_relevance": "medium"
+    },
+    {
+      "zone_name": "NW Sector — USID_27 Handover Zone",
+      "location": "North and center-west of USID_00 dominant area, extending toward the USID_27 tower (lat 33.025, lon -96.705)",
+      "signal_condition": "strong",
+      "sinr_regime": "interference_limited",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "low",
+      "evidence": {
+        "signal_evidence": "USID_27 rsrp_p50 in USID_00 zone = -57.6 dBm, absorption_fraction = 0.6154 (16 pixels); 100% above good threshold in zone; rsrp_p10 = -63.04 dBm confirming no deep fade.",
+        "sinr_evidence": "sinr_regime_impact_note = 'mixed' for USID_27 in USID_00 zone — some pixels transition from noise-limited to interference-limited upon handover, causing modest quality degradation for a subset of users.",
+        "geographic_evidence": "The real map shows suburban residential streets in this sector with the diagonal arterial running through. USID_27 is a micro tower at 20m height (NW of USID_00 per dominance map), well-positioned to serve this close-range residential population from street level.",
+        "load_evidence": "USID_27 post_outage_load_factor = 0.013 (low) — no congestion risk for this primary handover zone."
+      },
+      "user_relevance": "medium"
+    },
+    {
+      "zone_name": "E/SE Sector — USID_29 Handover Zone",
+      "location": "East and southeast edge of USID_00 dominant area, extending toward USID_29 at lat 33.023, lon -96.699",
+      "signal_condition": "strong",
+      "sinr_regime": "interference_limited",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "low",
+      "evidence": {
+        "signal_evidence": "USID_29 rsrp_p50 in USID_00 zone = -58.83 dBm, absorption_fraction = 0.4231 (11 pixels); 100% above good threshold.",
+        "sinr_evidence": "sinr_regime_impact_note = 'mostly_mild' for USID_29 — backup signal already competitive in this zone; minimal post-handover quality degradation expected.",
+        "geographic_evidence": "Real map shows this sector as residential suburban grid extending eastward. The NE quadrant shows a park (green space), consistent with lower user density at the far E edge of USID_29's absorptive reach.",
+        "load_evidence": "USID_29 post_outage_load_factor = 0.011 (low) — well within safe operating range."
+      },
+      "user_relevance": "low"
+    },
+    {
+      "zone_name": "S Sector — USID_41 / USID_37 Handover Zone",
+      "location": "South and center-south of USID_00 dominant area, toward USID_41 (lat 33.021, lon -96.705) and USID_37 (lat 33.021, lon -96.699)",
+      "signal_condition": "strong",
+      "sinr_regime": "interference_limited",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "low",
+      "evidence": {
+        "signal_evidence": "USID_41 rsrp_p50 in zone = -58.5 dBm (absorption 34.62%); USID_37 rsrp_p50 in zone = -58.71 dBm (absorption 26.92%); both 100% above good threshold.",
+        "sinr_evidence": "Both USID_41 and USID_37 carry sinr_regime_impact_note = 'mixed' — moderate degradation for handed-over users in S sector relative to their current USID_00 service.",
+        "geographic_evidence": "Real map shows southern portion of USID_00's area as residential grid streets with some commercial activity along N-S road corridors; consistent with moderate user density and no critical infrastructure.",
+        "load_evidence": "USID_41 post_outage_load_factor = 0.012 (low); USID_37 post_outage_load_factor = 0.005 (low) — collectively trivial load addition."
+      },
+      "user_relevance": "low"
+    }
+  ],
+  "coverage_hole_geographic_assessment": {
+    "hole_fraction": 0.1154,
+    "hole_location_description": "3 pixels at the NW fringe of USID_00's dominant area, positioned along or near the diagonal arterial road visible in the upper-center of the real map, at approximately lat 33.025–33.027, lon -96.706 to -96.704.",
+    "land_use_in_hole_area": "road corridor and adjacent mixed residential/commercial — the diagonal arterial road visible in the real map passes through this zone, suggesting moderate pedestrian and vehicular traffic.",
+    "user_impact_of_holes": "medium"
+  },
+  "load_geographic_context": {
+    "primary_backup_area_character": "USID_27 is a micro tower (20m) positioned NW of USID_00 in a dense residential area with commercial ground-floor presence along the diagonal arterial road. Its small cell footprint (dominant_pixel_fraction=0.0206) is well-suited for close-range residential capacity absorption but may not fully compensate for USID_00's broader macro reach in the coverage hole fringe.",
+    "backup_serves_same_critical_areas": false,
+    "notes": "No hospitals, emergency services, or major transit hubs are visibly identifiable within the specific USID_00 dominant footprint in the real map. The area is predominantly suburban residential with road corridors. The coverage gap in the NW fringe falls along a road corridor which may affect vehicular users but is not classified as critical infrastructure."
+  },
+  "key_findings_for_stage4": [
+    "Coverage holes (11.54%, 3 pixels) are geographically localized to the NW fringe of USID_00's dominant area along a diagonal arterial road corridor — users on this road segment will face a true signal gap; however, this is a road corridor rather than critical infrastructure (no hospital or emergency services identified).",
+    "The central residential core (majority of USID_00's 26 dominant pixels) lies in an interference-limited SINR regime (dominant_area_impact_regime='mostly_mild'), meaning USID_27 and USID_29 are already competing strongly and handover quality degradation will be limited for the bulk of users.",
+    "USID_27 micro tower (20m, NW position) is well-placed geographically to serve the dense residential immediately adjacent to USID_00, but its limited height and 2-band profile (no Band_700) may reduce building penetration for users in the NW residential blocks.",
+    "No critical infrastructure (hospital, emergency, transit hub) identified within USID_00's compact dominant footprint — this absence prevents constraint C2 from triggering and keeps overall severity at a lower level.",
+    "All backup towers are well-distributed around the USID_00 footprint (NW: USID_27, E: USID_29, SW: USID_41, S: USID_37, SE: USID_31), providing multi-directional geographic coverage with no single backup failure point; load distribution risk is low across all sectors."
+  ],
+  "uncertainty": {
+    "level": "medium",
+    "reasons": [
+      "Real map is available and confirms suburban residential character, but specific building types (commercial vs. residential) within the 26-pixel dominant footprint cannot be precisely resolved at the grid resolution used.",
+      "The exact 3-pixel location of coverage holes within the NW fringe is inferred from the dominance map boundary and neighbor signal patterns — precise street-level positioning requires drive-test validation.",
+      "No critical infrastructure is visible within the USID_00 footprint, but the map resolution may not show all relevant facilities (e.g., clinics, small emergency services)."
+    ]
+  }
+}

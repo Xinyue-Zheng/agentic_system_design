@@ -1,0 +1,63 @@
+{
+  "target_usid": "USID_00",
+  "shutdown_start": "2024-03-15 08:00",
+  "shutdown_end": "2024-03-15 12:00",
+  "shutdown_duration_hours": 4.0,
+  "overall_rating": {
+    "impact_severity": "low",
+    "user_impact_level": 1,
+    "summary_label": "Minor edge coverage loss, interference-limited handover for 88% of area",
+    "confidence": "high"
+  },
+  "impact_breakdown": {
+    "radio_degradation_risk":   "low",
+    "service_degradation_risk": "low",
+    "user_facing_impact_risk":  "moderate",
+    "load_redistribution_risk": "low",
+    "5g_downgrade_risk":        "low"
+  },
+  "constraint_check": {
+    "C1_applied": false,
+    "C1_note": "NOT triggered — hole_fraction=0.1154 > 0.05 threshold",
+    "C2_applied": false,
+    "C2_note": "NOT triggered — no is_critical_infrastructure=true in any Stage 3 zone",
+    "C3_applied": true,
+    "C3_note": "TRIGGERED — dominant_area_impact_regime=mostly_mild; preprocessing dominant_area_mild_fraction=1.0 and dominant_area_severe_fraction=0.0 are unambiguous. Base Level 2 (holes 5-20%) reduced one level to Level 1",
+    "C4_applied": false,
+    "C4_note": "NOT triggered — load_redistribution_verdict=adequate",
+    "C5_applied": false,
+    "C5_note": "NOT triggered — nsa_5g_downgrade_risk.flagged=false; primary backup USID_27 has 8 5G cells"
+  },
+  "most_affected_zones": [
+    {
+      "zone_name": "residential S",
+      "location": "S/SW edge, outer boundary of USID_00 dominance area",
+      "impact_severity": "high",
+      "primary_cause": ["coverage_loss"],
+      "user_relevance": "high"
+    }
+  ],
+  "main_reasons": [
+    "Coverage hole fraction = 11.54% (3 of 26 dominant pixels): S/SW residential fringe has no backup handover target — complete signal loss for the full 4-hour morning window.",
+    "C3 applied (dominant_area_mild_fraction=1.0): interference_limited regime confirmed by three-signal method for both covered zones (USID_27 easy_gap=0.5625, USID_29 easy_gap=0.6364; RULE 2 fires) — backups were already competitive pre-outage, reducing practical impact for 88.46% of users. Severity reduced from moderate (Level 2) to low (Level 1).",
+    "All five backup USIDs post_outage_load_factor ≤ 0.013 — zero capacity stress; load redistribution is adequate.",
+    "Shutdown duration 4.0 hours (08:00–12:00): sustained window covering the morning traffic peak — all users in the dominant area are affected for the full period."
+  ],
+  "mitigating_factors": [
+    "Interference_limited sinr_regime across 88.46% of the area (RULE 2 confirmed): backups were already strong before the outage — gap between USID_00 and backups is small (easy_gap dominant for primary backups).",
+    "All in-zone RSRP values ≥ -58.83 dBm (strong) across all covered pixels — handover quality excellent throughout.",
+    "No capacity overload: max post_outage_load_factor = 0.013, over 30× below the medium-risk threshold.",
+    "No critical infrastructure at risk — C2 not triggered; no hospital, no major expressway in the target area.",
+    "Primary backup USID_27 has 8 5G cells (exceeds USID_00's 6) — 5G continuity maintained on the primary handover path."
+  ],
+  "final_conclusion": "The USID_00 shutdown from 08:00 to 12:00 on 2024-03-15 is a low-severity, Level 1 (Minimal) impact event after applying C3 for the fully interference-limited dominant area (dominant_area_mild_fraction=1.0). The three-signal sinr_regime analysis confirms RULE 2 (interference_limited) for 88.46% of the target area — primary backups USID_27 and USID_29 have easy_gap dominance (replaceability=easy), a good signal environment, and low SINR, meaning the shutdown causes no surprising quality drop for the majority of users. The only material impact is the 11.54% S/SW residential coverage hole (3 pixels) with no handover target for the sustained 4-hour window. No critical infrastructure is affected, no backup site will experience capacity stress, and 5G continuity is preserved on all primary handover paths. The outage is operationally low-risk with the S/SW fringe hole as the sole zone warranting attention.",
+  "confidence": {
+    "level": "high",
+    "reasons": [
+      "All stage inputs carry low uncertainty.",
+      "C3 trigger is unambiguous: preprocessing dominant_area_mild_fraction=1.0, dominant_area_severe_fraction=0.0.",
+      "Three-signal sinr_regime classification is fully data-driven with preprocessing fractions.",
+      "All values are well clear of decision thresholds — no borderline cases."
+    ]
+  }
+}

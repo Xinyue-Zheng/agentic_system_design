@@ -1,0 +1,64 @@
+{
+  "target_usid": "USID_00",
+  "shutdown_start": "2024-03-15 08:00",
+  "shutdown_end": "2024-03-15 12:00",
+  "shutdown_duration_hours": 4.0,
+  "overall_rating": {
+    "impact_severity": "low",
+    "user_impact_level": 1,
+    "summary_label": "Minor edge coverage loss, mostly transparent handover",
+    "confidence": "high"
+  },
+  "impact_breakdown": {
+    "radio_degradation_risk":   "low",
+    "service_degradation_risk": "low",
+    "user_facing_impact_risk":  "moderate",
+    "load_redistribution_risk": "low",
+    "5g_downgrade_risk":        "low"
+  },
+  "constraint_check": {
+    "C1_applied": false,
+    "C1_note": "NOT triggered — hole_fraction = 0.1154 > 0.05 threshold; condition for C1 not met",
+    "C2_applied": false,
+    "C2_note": "NOT triggered — no is_critical_infrastructure = true found in Stage 3 impact zones",
+    "C3_applied": true,
+    "C3_note": "TRIGGERED — dominant_area_impact_regime = 'mostly_mild' (Stage 1); severity reduced one level from moderate (Level 2) to low (Level 1)",
+    "C4_applied": false,
+    "C4_note": "NOT triggered — load_redistribution_verdict = 'adequate', not 'overloaded'",
+    "C5_applied": false,
+    "C5_note": "NOT triggered — nsa_5g_downgrade_risk.flagged = false (primary backup USID_27 has 8 5G cells)"
+  },
+  "most_affected_zones": [
+    {
+      "zone_name": "residential S",
+      "location": "S/SW edge, outer boundary of USID_00 dominance area",
+      "impact_severity": "high",
+      "primary_cause": ["coverage_loss"],
+      "user_relevance": "high"
+    }
+  ],
+  "main_reasons": [
+    "Coverage hole fraction of 11.54% (3 of 26 dominant pixels) have no backup handover target — these S/SW residential fringe users will experience complete coverage loss for the full 4-hour shutdown window.",
+    "C3 constraint applied: dominant_area_impact_regime = 'mostly_mild' (Stage 1, target_dom_low_sinr_fraction = 0.6923) — the interference-limited regime indicates backup signals were already competitive before the outage, reducing practical service degradation for the covered 88.46% of the area.",
+    "All five backup USIDs show post_outage_load_factor <= 0.013, far below the 0.50 medium-risk threshold — zero capacity stress across the entire backup network.",
+    "88.46% of the dominant area transitions to excellent backup RSRP (all in-zone p50 between -57.54 and -58.83 dBm, 100% above good threshold), making the handover transparent for the majority of users.",
+    "Shutdown duration of 4.0 hours (08:00–12:00) is a sustained window covering the full morning traffic peak — all users in the dominant area are affected for the entire window, including the 11.54% hole area with no backup."
+  ],
+  "mitigating_factors": [
+    "88.46% of USID_00's dominant area has excellent backup coverage — all in-zone RSRP values > -80 dBm (strong) for five separate backup USIDs, ensuring the majority of users experience a transparent handover.",
+    "No overload on any backup site — maximum post_outage_load_factor = 0.013 (USID_27), negligible compared to any risk threshold.",
+    "No critical infrastructure (hospital, major expressway) identified in the target area — no C2 escalation driver.",
+    "Primary backup USID_27 carries 8 5G cells, matching or exceeding USID_00's 5G capability — no 5G service downgrade on the primary handover path.",
+    "SINR interference-limited regime (69.2% of dominant area) means users were already receiving competing signals from backup sites pre-outage, minimizing perceived quality drop for covered users."
+  ],
+  "final_conclusion": "The USID_00 shutdown from 08:00 to 12:00 on 2024-03-15 is assessed as a low-severity, Level 1 (Minimal) impact event after applying C3 adjustment for the mostly_mild interference-limited SINR regime. The dominant practical risk is a localized 11.54% coverage hole at the S/SW residential fringe of the dominance boundary, where 3 pixels have no backup handover target — these residential users will experience complete signal loss for the entire 4-hour window. For the remaining 88.46% of the area, five backup USIDs (led by USID_27 with 61.5% absorption) provide excellent in-zone RSRP and zero capacity strain, making the outage transparent to the vast majority of users. No critical infrastructure is at risk, no overload will occur on any backup site, and the 5G service continuity is preserved on all primary and secondary handover paths. The 4-hour morning window is sustained but bounded, with full service restoration expected on schedule.",
+  "confidence": {
+    "level": "high",
+    "reasons": [
+      "All stage inputs are data-driven with low uncertainty (Stage 1: low, Stage 2: low, Stage 3: low).",
+      "Constraint logic is unambiguous — C3 is the only applied constraint and its trigger condition (mostly_mild) is directly confirmed by preprocessing (target_dom_low_sinr_fraction = 0.6923).",
+      "The 11.54% hole fraction is small and spatially bounded; its HIGH local severity is well-supported by the coverage hole geographic assessment from Stage 3.",
+      "No borderline threshold decisions — all values are well clear of their respective thresholds (load factors 10-50x below risk limits, RSRP 20+ dBm above degradation threshold for covered zones)."
+    ]
+  }
+}

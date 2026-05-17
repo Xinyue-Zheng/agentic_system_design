@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "telecom_data": {
+      "command": "python3",
+      "args": ["/workspace/version_4/mcp_server/server.py"],
+      "env": {
+        "DATA_DIR": "/workspace/version_4/data"
+      }
+    }
+  }
+}

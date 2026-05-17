@@ -1,0 +1,100 @@
+{
+  "computation_tools": [
+    {
+      "name": "compute_coverage_summary",
+      "description": "Per-sector and per-USID RSRP statistics plus area-level SINR, throughput, and RSRQ distributions across all pixels. Cached after first call.",
+      "params": {
+        "coverage_json_path": "str"
+      },
+      "module": "tools.computation_tools"
+    },
+    {
+      "name": "compute_capacity_summary",
+      "description": "Capacity score for every USID from site attributes CSV. Formula: (4G_cells x 1.0 + 5G_cells x 2.0) x (1 + 0.15 x active_bands). Used as input to compute_load_redistribution. Cached after first call.",
+      "params": {
+        "attr_csv_path": "str"
+      },
+      "module": "tools.computation_tools"
+    },
+    {
+      "name": "identify_neighbors",
+      "description": "Rank all USIDs by backup overlap fraction with the target USID. Returns list sorted by overlap fraction descending. Cached by target_usid after first call.",
+      "params": {
+        "coverage_json_path": "str",
+        "target_usid": "str",
+        "threshold": "float"
+      },
+      "module": "tools.computation_tools"
+    },
+    {
+      "name": "compute_load_redistribution",
+      "description": "When target_usid goes down, compute absorption capacity and overload risk for each backup USID. Internally calls compute_capacity_summary \u2014 no need to pass it separately. Cached by target_usid after first call.",
+      "params": {
+        "coverage_json_path": "str",
+        "target_usid": "str",
+        "attr_csv_path": "str"
+      },
+      "module": "tools.computation_tools"
+    },
+    {
+      "name": "generate_rsrp_image",
+      "description": "RSRP heatmap PNG for a given USID. Returns image_path and cached flag. Skips generation if file already exists.",
+      "params": {
+        "coverage_json_path": "str",
+        "usid": "str",
+        "output_dir": "str"
+      },
+      "module": "tools.computation_tools"
+    },
+    {
+      "name": "generate_sinr_map",
+      "description": "SINR heatmap PNG with target USID dominant area boundary. Returns image_path and cached flag. Skips generation if file already exists.",
+      "params": {
+        "coverage_json_path": "str",
+        "target_usid": "str",
+        "output_dir": "str"
+      },
+      "module": "tools.computation_tools"
+    },
+    {
+      "name": "generate_throughput_map",
+      "description": "Throughput heatmap PNG with target USID dominant area boundary. Returns image_path and cached flag. Skips generation if file already exists.",
+      "params": {
+        "coverage_json_path": "str",
+        "target_usid": "str",
+        "output_dir": "str"
+      },
+      "module": "tools.computation_tools"
+    },
+    {
+      "name": "generate_rsrq_map",
+      "description": "RSRQ heatmap PNG with target USID dominant area boundary. Returns image_path and cached flag. Skips generation if file already exists.",
+      "params": {
+        "coverage_json_path": "str",
+        "target_usid": "str",
+        "output_dir": "str"
+      },
+      "module": "tools.computation_tools"
+    },
+    {
+      "name": "generate_dominance_map",
+      "description": "Dominance map PNGs: full network overview and neighborhood zoom. Returns overview_path, neighborhood_path, and cached flag. Skips generation if both files already exist.",
+      "params": {
+        "coverage_json_path": "str",
+        "target_usid": "str",
+        "output_dir": "str"
+      },
+      "module": "tools.computation_tools"
+    },
+    {
+      "name": "classify_pixel_regime",
+      "description": "",
+      "params": {
+        "sinr": "float",
+        "dom_rsrp": "float",
+        "gap": "float"
+      },
+      "module": "tools.computation_tools"
+    }
+  ]
+}

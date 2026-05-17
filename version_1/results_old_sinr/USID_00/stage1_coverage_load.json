@@ -1,0 +1,129 @@
+{
+  "usids": [
+    {
+      "usid": "USID_00",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0163,
+      "rsrp_p50_dbm": -57.0,
+      "rsrp_spatial_pattern": "Compact deep-blue cluster (all pixels > -80 dBm excellent) centered at tower ~33.023N, -96.703W. Yellow dominance boundary encloses a small, roughly circular area of 26 pixels. Signal remains uniformly excellent throughout the interior; no degradation gradient within the boundary. Backup-mode pixels extend N and NE of the boundary in teal/green tones (~-70 to -78 dBm) — still good quality but below dominance threshold."
+    },
+    {
+      "usid": "USID_27",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0206,
+      "rsrp_p50_dbm": -58.58,
+      "rsrp_spatial_pattern": "Tower positioned NW of USID_00 (~33.027, -96.707). Deep-blue signal (excellent) dominates the NW and center of USID_00's area as shown by heavy overlap with the red-dashed USID_00 boundary. Coverage fades toward the SE corner of USID_00's area to teal/green (~-70 dBm). Own dominance boundary (yellow) is offset NW from USID_00's boundary — USID_27 is the strongest backup in the NW quadrant of USID_00's zone."
+    },
+    {
+      "usid": "USID_29",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0219,
+      "rsrp_p50_dbm": -57.96,
+      "rsrp_spatial_pattern": "Tower positioned ESE of USID_00 (~33.022, -96.699). Deep-blue excellent signal covers the central and SE portion of USID_00's area (red-dashed boundary). USID_29's own dominance (yellow) sits to the SE of USID_00. Signal weakens at the NW edge of USID_00's boundary. Good backup coverage for the E/SE half of USID_00's area."
+    },
+    {
+      "usid": "USID_41",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0125,
+      "rsrp_p50_dbm": -53.94,
+      "rsrp_spatial_pattern": "Tower located S of USID_00 (~33.020, -96.706). Coverage of USID_00's area (red-dashed) is limited to the southern edge — only the bottom strip of USID_00's boundary sees USID_41 signal. One bright-green pixel visible at the NE edge of the overlap, but most backup in the south. The NW quadrant of USID_00's area receives very little USID_41 signal."
+    },
+    {
+      "usid": "USID_37",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0088,
+      "rsrp_p50_dbm": -57.28,
+      "rsrp_spatial_pattern": "Tower positioned SE of USID_00 (~33.021, -96.700). Provides deep-blue excellent signal in the SE quadrant of USID_00's area (red-dashed boundary). Own yellow dominance boundary is south of USID_00's zone. Lighter green signal (good, ~-80 dBm) visible at the NW fringes of the overlap area. Complements USID_29 coverage in the eastern half of USID_00."
+    },
+    {
+      "usid": "USID_31",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0156,
+      "rsrp_p50_dbm": -52.75,
+      "rsrp_spatial_pattern": "Tower located S/SSW of USID_00 (~33.019, -96.703). Coverage of USID_00's area is marginal — only 2 pixels at the extreme southern tip of USID_00's boundary fall within USID_31's reach. Own yellow dominance boundary is well south of USID_00's zone. Deep-blue signal in its own area but the overlap with USID_00 is minimal."
+    }
+  ],
+  "target_load_analysis": {
+    "target_usid": "USID_00",
+    "dominant_area_impact_regime": "mostly_mild",
+    "coverage_hole_fraction": 0.1154,
+    "coverage_hole_assessment": "3 pixels (11.54% of USID_00's 26 dominant pixels) have no backup coverage. This is above the 5% minor threshold but below 20%. Located at the S/SW boundary edge where neither USID_27 (NW tower) nor USID_29/37 (SE towers) reach. Users in this fringe strip will have no handover target upon shutdown.",
+    "per_backup": [
+      {
+        "backup_usid": "USID_27",
+        "absorption_fraction_of_target": 0.6154,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -57.6,
+        "sinr_regime_impact_note": "mixed",
+        "post_outage_load_factor": 0.013,
+        "overload_risk": "low",
+        "assessment": "USID_27 is the primary backup, absorbing 61.5% of USID_00's dominant pixels with excellent in-zone RSRP of -57.6 dBm (100% above good threshold). Post-outage load factor of 0.013 is negligible, confirming no capacity stress; the SINR regime is mixed (intermediate impact, neither fully noise- nor interference-limited)."
+      },
+      {
+        "backup_usid": "USID_29",
+        "absorption_fraction_of_target": 0.4231,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -58.83,
+        "sinr_regime_impact_note": "mostly_mild",
+        "post_outage_load_factor": 0.011,
+        "overload_risk": "low",
+        "assessment": "USID_29 covers 42.3% of USID_00's area with good in-zone RSRP (-58.83 dBm, 100% above good). The mostly_mild SINR regime indicates that backups are already competitive in this zone, reducing post-shutdown degradation. Post-outage load factor 0.011 presents no capacity concern."
+      },
+      {
+        "backup_usid": "USID_41",
+        "absorption_fraction_of_target": 0.3462,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -58.5,
+        "sinr_regime_impact_note": "mixed",
+        "post_outage_load_factor": 0.012,
+        "overload_risk": "low",
+        "assessment": "USID_41 absorbs 34.6% of USID_00's dominant pixels with strong in-zone RSRP of -58.5 dBm (100% above good). Despite being a 4G-heavy site (8×4G, 2×5G), its in-zone signal quality is excellent; post-outage load factor 0.012 is well below any risk threshold."
+      },
+      {
+        "backup_usid": "USID_37",
+        "absorption_fraction_of_target": 0.2692,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -58.71,
+        "sinr_regime_impact_note": "mixed",
+        "post_outage_load_factor": 0.005,
+        "overload_risk": "low",
+        "assessment": "USID_37 covers 26.9% of USID_00's area (SE quadrant) with good RSRP of -58.71 dBm and the lowest post-outage load factor (0.005) of all backups. It provides solid SE-quadrant redundancy complementing USID_29 with negligible load impact."
+      },
+      {
+        "backup_usid": "USID_31",
+        "absorption_fraction_of_target": 0.0769,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -57.54,
+        "sinr_regime_impact_note": "mostly_mild",
+        "post_outage_load_factor": 0.008,
+        "overload_risk": "low",
+        "assessment": "USID_31 is a marginal backup, absorbing only 7.7% of USID_00's area (2 pixels at the southern tip). In-zone RSRP is -57.54 dBm (good), and post-outage load factor 0.008 is trivial. Its contribution is minimal but clean where it does overlap."
+      }
+    ],
+    "load_redistribution_verdict": "adequate",
+    "verdict_reasoning": [
+      "All five backup USIDs show post_outage_load_factor <= 0.013, far below the 0.50 medium-risk threshold, confirming no capacity overload on any backup site.",
+      "100% of covered pixels (88.46% of USID_00's area) achieve rsrp_pct_above_good_in_zone = 100.0% for every backup, indicating excellent handover signal quality throughout the covered portion.",
+      "Coverage hole fraction is 11.54% (3 pixels), which is a moderate gap but does not affect the load redistribution verdict since the remaining 88.46% transitions cleanly with no overload; coverage holes are a coverage gap issue, not a load overload issue."
+    ]
+  },
+  "key_findings_for_stage3": [
+    "Coverage holes (11.54%, 3 pixels) are concentrated at the S/SW edge of USID_00's dominance boundary — where neither USID_27 (NW) nor USID_29/37 (SE) footprints reach.",
+    "USID_27 provides the dominant backup signal across the NW and center of USID_00's area, with strong blue RSRP visible throughout the NW quadrant of the boundary.",
+    "USID_29 and USID_37 together cover the E/SE portion of USID_00's area, providing a complementary eastern backup corridor.",
+    "The SINR map shows predominantly cool blue/cyan tones inside USID_00's dominant area, consistent with target_dom_low_sinr_fraction=0.6923 — interference-limited regime means backup signals were already competitive before the outage."
+  ],
+  "uncertainty": {
+    "level": "low",
+    "reasons": [
+      "All statistics sourced directly from preprocessing with no derived or estimated values.",
+      "Image spatial claims are consistent with per_backup absorption fractions — USID_27 dominates NW (highest absorption 0.6154), USID_29/37 cover SE (second/third highest)."
+    ]
+  }
+}

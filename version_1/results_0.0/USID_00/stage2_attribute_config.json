@@ -1,0 +1,119 @@
+{
+  "usids": [
+    {
+      "usid": "USID_00",
+      "capacity_score": 25.6,
+      "tower_type": "macro",
+      "active_band_count": 4,
+      "technology_profile": "5G-dominant",
+      "operational_role": "mixed",
+      "role_confidence": "high",
+      "key_observations": [
+        "5G-dominant profile with 6 5G cells and 4 4G cells across 4 bands (700, 1800, 2600, 3500 MHz) gives broad spectral coverage and strong NR capacity.",
+        "40m macro tower height provides good line-of-sight in suburban terrain but is not outstanding — within the standard macro range.",
+        "Capacity score 25.6 is among the highest in the network, reflecting the 5G-heavy cell mix weighted by the formula (4x1.0 + 6x2.0) x (1+0.15x4) = 25.60.",
+        "Mixed operational role reflects the combination of LTE coverage bands (700 MHz) and high-capacity NR bands (3500 MHz)."
+      ]
+    },
+    {
+      "usid": "USID_27",
+      "capacity_score": 23.4,
+      "tower_type": "micro",
+      "active_band_count": 2,
+      "technology_profile": "5G-dominant",
+      "operational_role": "capacity-oriented",
+      "role_confidence": "high",
+      "key_observations": [
+        "20m micro tower — the shortest in the neighbor set — indicating urban/dense-suburban small-cell deployment focused on localized capacity rather than area coverage.",
+        "Micro profile with only 2 active bands (2600 and 3500 MHz, no sub-1GHz) means limited deep-indoor or range coverage — purely capacity/hotspot role.",
+        "8 5G cells gives the highest 5G cell count among neighbors; capacity score 23.4 = (2x1.0 + 8x2.0) x (1+0.15x2) = 23.40.",
+        "As primary backup for USID_00, the micro form factor means its absorption of 61.5% of USID_00 pixels is at physically close range — consistent with its high overlap fraction."
+      ]
+    },
+    {
+      "usid": "USID_29",
+      "capacity_score": 25.6,
+      "tower_type": "macro",
+      "active_band_count": 4,
+      "technology_profile": "5G-dominant",
+      "operational_role": "mixed",
+      "role_confidence": "high",
+      "key_observations": [
+        "Identical attribute profile to USID_00 (macro_5g, 40m, 4 bands, 4G=4, 5G=6) — same capacity tier at 25.6.",
+        "Positioned as the second-highest overlap neighbor (42.3%); its matching capacity makes it a strong secondary backup.",
+        "4-band coverage (700/1800/2600/3500) supports both wide-area coverage and NR capacity, consistent with mixed operational role."
+      ]
+    },
+    {
+      "usid": "USID_41",
+      "capacity_score": 15.6,
+      "tower_type": "macro",
+      "active_band_count": 2,
+      "technology_profile": "mixed-4G-5G",
+      "operational_role": "mixed",
+      "role_confidence": "high",
+      "key_observations": [
+        "macro_capacity profile with 8 4G cells and only 2 5G cells — the lowest 5G count among USID_00's neighbors.",
+        "Capacity score 15.6 = (8x1.0 + 2x2.0) x (1+0.15x2) = 15.60 is the lowest among active backup neighbors, reflecting the 4G-heavy cell mix.",
+        "Two active bands (1800 and 2600 MHz, no 700 or 3500) suggests a mid-band 4G-focused deployment — less NR capability.",
+        "35m macro height provides reasonable coverage but its contribution at 34.6% absorption is supplementary given the capacity score differential."
+      ]
+    },
+    {
+      "usid": "USID_37",
+      "capacity_score": 25.6,
+      "tower_type": "macro",
+      "active_band_count": 4,
+      "technology_profile": "5G-dominant",
+      "operational_role": "mixed",
+      "role_confidence": "high",
+      "key_observations": [
+        "Identical attribute profile to USID_00 and USID_29 (macro_5g, 40m, 4 bands) — same capacity tier at 25.6.",
+        "Strong 5G capability with 6 NR cells across 4 bands; well-matched to USID_00 for technology continuity during handover.",
+        "Despite lower overlap (26.9%), its capacity headroom is ample."
+      ]
+    },
+    {
+      "usid": "USID_31",
+      "capacity_score": 22.4,
+      "tower_type": "tall_macro",
+      "active_band_count": 4,
+      "technology_profile": "mixed-4G-5G",
+      "operational_role": "mixed",
+      "role_confidence": "high",
+      "key_observations": [
+        "Tallest tower among neighbors at 48m (tall_macro) — provides broad area coverage from an elevated position, consistent with its spatial reach southward.",
+        "Capacity score 22.4 = (6x1.0 + 4x2.0) x (1+0.15x4) = 22.40; moderate NR presence with 4 5G cells.",
+        "4-band configuration (700/1800/2600/3500) gives good coverage breadth but mixed-4G-5G profile shows less 5G dominance than USID_00.",
+        "Minimal overlap with USID_00 (7.7%) due to geographic offset; tall-macro height extends reach southward, not northward into USID_00's core."
+      ]
+    }
+  ],
+  "nsa_5g_downgrade_risk": {
+    "flagged": false,
+    "target_5g_cells": 6,
+    "primary_backup_5g_cells": 8,
+    "affected_fraction_estimate": 0.0,
+    "explanation": "Primary backup USID_27 has 8 5G cells — more than USID_00's 6 — so users anchored on NR at USID_00 can maintain 5G service on USID_27. All five backup USIDs carry at least 2 5G cells (USID_41 minimum), so no wholesale 5G-to-4G downgrade scenario exists for any segment of USID_00's dominant area."
+  },
+  "overall_capacity_verdict": "adequate",
+  "capacity_verdict_reasoning": [
+    "USID_27 (23.4), USID_29 (25.6), and USID_37 (25.6) provide high-capacity 5G-dominant backup options; these three alone cover > 100% of USID_00's dominant pixels through overlapping absorption.",
+    "Post-outage load factors are all below 0.015 — orders of magnitude below the 0.5 medium-risk threshold — confirming that the capacity of each backup remains virtually unperturbed by USID_00's shutdown.",
+    "USID_41's lower score (15.6) is a minor concern in isolation, but its post-outage load factor of 0.012 shows trivial incremental load, so its capacity is not a binding constraint.",
+    "5G continuity is ensured across the network — no backup USID drops to 4G-only, preserving NR service for all USID_00 users post-handover."
+  ],
+  "key_findings_for_stage4": [
+    "USID_00 is a high-capacity 5G-dominant macro site (capacity_score=25.6); its shutdown removes significant NR capacity from the local cell plan, but backups have equivalent or higher 5G capability.",
+    "USID_27 (micro) is the primary backup — its micro tower form factor signals physically close proximity to USID_00, explaining the high 61.5% overlap absorption; no 5G downgrade risk.",
+    "USID_41 is the capacity-weakest backup (15.6) but this is inconsequential given the negligible incremental load (post_outage_load_factor=0.012)."
+  ],
+  "uncertainty": {
+    "level": "low",
+    "reasons": [
+      "All capacity scores read directly from preprocessing capacity_summary; no recomputation performed.",
+      "Tower types assigned strictly per height thresholds: all match the CSV height values without ambiguity.",
+      "NSA downgrade assessment is deterministic: primary backup (USID_27) has 5G cells, so no flag."
+    ]
+  }
+}

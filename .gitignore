@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv*/
+venv/
+env/
+ENV/
+version_1/agent_usid/
+
+# Data directories (large CSV / JSON files — not tracked in git)
+version_1/data/
+version_2/data/
+version_3/data/
+version_4/data/
+version_5/data/
+
+# Test data copies
+version_3/test_function/kpi_sector_timeseries.csv
+version_3/test_function/KPI_data.csv
+
+# Generated outputs
+version_3/planner_output/
+version_3/artifacts/
+version_3/memory_store/
+version_4/output/
+version_4/cache/
+version_5/outputs/
+
+# Cache
+version_3/cache/
+cache/
+
+# Files containing credentials / tokens
+version_1/agent_workflow.py
+version_3/test_function/test.py
+version_5/test.py
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+*.egg-info/
+dist/
+build/

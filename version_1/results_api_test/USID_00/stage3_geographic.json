@@ -1,0 +1,103 @@
+{
+  "area_overview": {
+    "geographic_character": "suburban",
+    "map_explains_signal_patterns": true,
+    "key_geographic_observations": [
+      "Real map shows a dense suburban grid (Plano/Dallas, TX area ~33.010-33.055N, -96.720 to -96.670W) with a major N-S arterial/expressway visible running through the center-western portion at approximately -96.710 to -96.700 longitude — consistent with the RSRP gap between USID_00 and USID_26 footprints west of the dominant area",
+      "USID_00's dominant zone (33.028-33.035N, -96.696 to -96.688W) sits in a dense residential grid pattern with commercial strip development visible along major E-W corridors, explaining the compact but well-defined dominance boundary seen in tile_1_1",
+      "NE corner of the map shows greenspace/park areas; these lie outside USID_00's dominant footprint and are not relevant to the hole analysis",
+      "The compact, nearly circular USID_00 dominant area with no signal below -100 dBm is consistent with a mid-height macro (40m) in a flat suburban environment with regular building spacing"
+    ]
+  },
+  "impact_zones": [
+    {
+      "zone_name": "Central Residential Core",
+      "location": "Center of USID_00 dominant area, ~33.031-33.034N / -96.694 to -96.690W",
+      "signal_condition": "strong",
+      "sinr_regime": "interference_limited",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "low",
+      "evidence": {
+        "signal_evidence": "rsrp_p50_dbm = -70.6 dBm (Excellent, 100% above -80 dBm threshold); blue core visible in RSRP image within yellow dominance boundary",
+        "sinr_evidence": "dominant_area SINR mean = 5.46 dB, 60% of pixels < 5 dB (interference-limited regime → mostly_mild post-outage impact)",
+        "geographic_evidence": "Dense residential street grid visible in real map at this location — regular block pattern consistent with low-rise suburban housing",
+        "load_evidence": "All backup USIDs show overload_risk = low; USID_26 (p50=-72.27 dBm) and USID_41 (p50=-74.4 dBm) provide good coverage here"
+      },
+      "user_relevance": "high"
+    },
+    {
+      "zone_name": "Southern Isolated Lobe — Coverage Hole Zone",
+      "location": "Southern fringe of USID_00 dominant area, ~33.027-33.029N / -96.693 to -96.691W",
+      "signal_condition": "weak",
+      "sinr_regime": "interference_limited",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "high",
+      "evidence": {
+        "signal_evidence": "A small disconnected pixel cluster at the southern edge is visible as a separate lobe in USID_31's red-dashed boundary (~33.028N); backup RSRP images (USID_26, USID_41) show diminishing colored pixels in this southern region, consistent with being part of the 24% coverage hole fraction (12/50 pixels)",
+        "sinr_evidence": "SINR map shows mostly blue/teal (~0-10 dB) within the red USID_00 contour — interference-limited; however absence of any backup means signal quality is moot for hole pixels",
+        "geographic_evidence": "Real map shows continuous residential development at this latitude — streets and housing blocks; the isolated lobe likely represents a localized shadowed zone behind a building cluster or topographic micro-variation",
+        "load_evidence": "Coverage_hole_fraction = 0.24 (12/50 pixels have no backup); these southern peripheral pixels are the most likely hole candidates given they appear disconnected from the main cluster in USID_31's RSRP overlay"
+      },
+      "user_relevance": "high"
+    },
+    {
+      "zone_name": "Western Margin — Road Corridor Transition",
+      "location": "Western edge of USID_00 dominant area, ~33.031-33.033N / -96.697 to -96.694W",
+      "signal_condition": "moderate",
+      "sinr_regime": "interference_limited",
+      "land_use": "road",
+      "is_critical_infrastructure": false,
+      "impact_severity": "moderate",
+      "evidence": {
+        "signal_evidence": "Western pixels in RSRP image transition from green to yellow (~-75 to -80 dBm) near the dominance boundary; rsrp_p10_dbm = -75.85 dBm (Good) for USID_00",
+        "sinr_evidence": "60% low-SINR fraction (interference-limited) → backups already visible here, mostly_mild impact expected",
+        "geographic_evidence": "Real map shows a major N-S arterial road running through approximately -96.71 to -96.70W — traffic corridor running N-S adjacent to the western boundary of USID_00's footprint; mobile users on this road will transition to USID_26 coverage",
+        "load_evidence": "USID_26 absorption_fraction_of_target = 0.46, post_outage_load_factor = 0.012 (low) — western corridor well-covered by USID_26"
+      },
+      "user_relevance": "medium"
+    },
+    {
+      "zone_name": "Eastern Margin — Backup Handoff Zone",
+      "location": "Eastern edge of USID_00 dominant area, ~33.031-33.034N / -96.691 to -96.688W",
+      "signal_condition": "moderate",
+      "sinr_regime": "mixed",
+      "land_use": "residential",
+      "is_critical_infrastructure": false,
+      "impact_severity": "low",
+      "evidence": {
+        "signal_evidence": "USID_30 and USID_28 both provide green signal (~-72 to -76 dBm) at the eastern boundary of USID_00's area (visible in their respective RSRP images)",
+        "sinr_evidence": "SINR map shows heterogeneous values near eastern boundary — mix of blue and green pixels (5-15 dB), classified as mixed regime",
+        "geographic_evidence": "Dense residential grid visible in real map at this eastern extent — backups USID_30 and USID_28 serve users in these neighborhoods without load risk",
+        "load_evidence": "USID_28 post_outage_load_factor = 0.004, USID_30 = 0.012 — both low risk"
+      },
+      "user_relevance": "medium"
+    }
+  ],
+  "coverage_hole_geographic_assessment": {
+    "hole_fraction": 0.24,
+    "hole_location_description": "12 of 50 USID_00 dominant pixels have no backup USID. Spatial analysis of RSRP images and dominance maps suggests these are concentrated at the southern peripheral lobe (~33.027-33.029N) where USID_00's dominant area becomes disconnected from the main cluster, and potentially at corners of the main cluster where USID_26, USID_41, USID_30, USID_28, and USID_31 coverage all taper simultaneously.",
+    "land_use_in_hole_area": "Predominantly residential, based on the real map showing continuous suburban street grid at these coordinates. No major commercial or infrastructure features identifiable specifically in the hole zone.",
+    "user_impact_of_holes": "high"
+  },
+  "load_geographic_context": {
+    "primary_backup_area_character": "USID_26 dominant area lies W-NW of USID_00, in a similarly dense suburban residential zone adjacent to the major N-S arterial. Its coverage extends into the central-western portion of USID_00's area with good signal quality (p50=-72.27 dBm).",
+    "backup_serves_same_critical_areas": false,
+    "notes": "No critical infrastructure (hospital, transit hub, emergency services) was identifiable within USID_00's small 50-pixel dominant zone from the real map. The area is uniformly residential suburban, which carries high user relevance but not critical-infrastructure classification. The 24% hole fraction is the dominant geographic risk: users in the isolated southern lobe will lose all cellular service, in a residential area with no identified alternative access."
+  },
+  "key_findings_for_stage4": [
+    "The 24% coverage hole fraction (12 pixels) is geographically concentrated in the southern isolated lobe of USID_00's dominant area (~33.027-33.029N), a residential zone where USID_26, USID_41, USID_30, USID_28 and USID_31 coverage all tapers out — these users will lose service entirely during the shutdown",
+    "The central residential core (majority of 50 dominant pixels) is interference-limited (mean SINR 5.46 dB, 60% < 5 dB) and will hand over smoothly to USID_26 (W) and USID_41 (N) with good RSRP and low load risk",
+    "No critical infrastructure (hospital, emergency services, transit hub) is identifiable within USID_00's compact dominant footprint — impact classification is high user relevance but not critical-infrastructure severity",
+    "A major N-S road corridor at the western boundary (-96.71 to -96.70W) will be affected at the USID_00/USID_26 handoff boundary; mobile users in transit may experience brief service interruption during handover"
+  ],
+  "uncertainty": {
+    "level": "medium",
+    "reasons": [
+      "Real map was available and used for geographic correlation, reducing uncertainty significantly",
+      "Exact pixel-level location of the 12 coverage holes cannot be derived with full certainty from the images alone — southern lobe is the most likely candidate based on visual inspection",
+      "Critical infrastructure identification from a street map tile is inherently uncertain — hospitals or emergency facilities may exist in this zone but not be visually distinguishable at this zoom level"
+    ]
+  }
+}

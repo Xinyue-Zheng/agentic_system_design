@@ -1,0 +1,136 @@
+{
+  "usids": [
+    {
+      "usid": "USID_00",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.013,
+      "rsrp_p50_dbm": -70.6,
+      "rsrp_spatial_pattern": "Compact, nearly circular cluster centered at ~33.032N/-96.692W. Strong blue core (RSRP well above -80 dBm) within yellow dominance boundary. Signal decays rapidly to green/yellow at edges (~-75 to -80 dBm) and drops to grey (not visible) beyond ~0.005 degrees radius. No pixels below -100 dBm observed within the dominant zone.",
+      "outage_relevance": "high"
+    },
+    {
+      "usid": "USID_26",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.012,
+      "rsrp_p50_dbm": -70.94,
+      "rsrp_spatial_pattern": "Dominant area (yellow) lies W-NW of USID_00's area (red-dashed). Signal is strong (blue-green) in center. Coverage extends into the western and central portions of USID_00's dominant area with RSRP ~-72 dBm at p50. Footprint is slightly larger than USID_00 and partially overlaps from the west.",
+      "outage_relevance": "high"
+    },
+    {
+      "usid": "USID_41",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0151,
+      "rsrp_p50_dbm": -70.32,
+      "rsrp_spatial_pattern": "Tower located N of USID_00 (~33.038-33.040N). Dominance zone extends southward with a trailing lobe that reaches to the northern portion of USID_00's area (red-dashed). Signal within USID_00's area is green (~-73 to -75 dBm). Dominance boundary (yellow) runs along the southern edge of the main cluster.",
+      "outage_relevance": "high"
+    },
+    {
+      "usid": "USID_30",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0151,
+      "rsrp_p50_dbm": -69.21,
+      "rsrp_spatial_pattern": "Tower to the NE/E of USID_00. Dominance boundary (yellow) covers E-NE region. Coverage visible within eastern half of USID_00's red-dashed area with green signal (~-72 to -75 dBm). Strong central signal (blue) is offset east of the USID_00 dominant zone.",
+      "outage_relevance": "medium"
+    },
+    {
+      "usid": "USID_28",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0083,
+      "rsrp_p50_dbm": -71.17,
+      "rsrp_spatial_pattern": "Tower to the east/NE. Yellow dominance boundary sits east of USID_00's red-dashed zone. Green pixels visible at the eastern margin of USID_00's area (~-75 dBm). Smaller footprint among the neighbors.",
+      "outage_relevance": "medium"
+    },
+    {
+      "usid": "USID_31",
+      "role": "edge-limited",
+      "role_confidence": "low",
+      "dominant_pixel_fraction": 0.0198,
+      "rsrp_p50_dbm": -70.89,
+      "rsrp_spatial_pattern": "Tower located far north (~33.040-33.045N). Own dominance boundary (yellow) is well south of the main cluster, separated by a gap. The red-dashed USID_00 area receives minimal colored pixels from USID_31, consistent with only 4 backup pixels (8% absorption). Coverage contribution is at the southern fringe of USID_31's reach.",
+      "outage_relevance": "low"
+    }
+  ],
+  "target_load_analysis": {
+    "target_usid": "USID_00",
+    "dominant_area_impact_regime": "mostly_mild",
+    "coverage_hole_fraction": 0.24,
+    "coverage_hole_assessment": "24% of USID_00's 50 dominant pixels (12 pixels) have no backup USID. These pixels will lose service entirely upon shutdown. This is the single most significant impact driver — nearly one in four dominant pixels becomes a hard coverage hole.",
+    "per_backup": [
+      {
+        "backup_usid": "USID_26",
+        "absorption_fraction_of_target": 0.46,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -72.27,
+        "sinr_regime_impact_note": "mostly_mild",
+        "post_outage_load_factor": 0.012,
+        "overload_risk": "low",
+        "assessment": "USID_26 absorbs 46% of USID_00's dominant pixels with good RSRP (-72.27 dBm p50) and 100% of absorbed pixels above -90 dBm. SINR regime is mostly_mild (65% interference-limited), meaning backup was already near-dominant here, so post-handover quality degradation is expected to be limited. Post-outage load factor of 0.012 is far below the 0.5 medium threshold, so no congestion risk."
+      },
+      {
+        "backup_usid": "USID_41",
+        "absorption_fraction_of_target": 0.42,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -74.4,
+        "sinr_regime_impact_note": "mostly_mild",
+        "post_outage_load_factor": 0.009,
+        "overload_risk": "low",
+        "assessment": "USID_41 absorbs 42% of USID_00's dominant pixels with all absorbed pixels above -90 dBm (p50=-74.4 dBm, good zone). SINR regime is mostly_mild (85.7% interference-limited), so the backup signal is already competitive. Post-outage load factor of 0.009 presents negligible congestion risk."
+      },
+      {
+        "backup_usid": "USID_30",
+        "absorption_fraction_of_target": 0.22,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -72.54,
+        "sinr_regime_impact_note": "mostly_mild",
+        "post_outage_load_factor": 0.012,
+        "overload_risk": "low",
+        "assessment": "USID_30 absorbs 22% of target pixels with strong signal (p50=-72.54 dBm, 100% above -90 dBm). Mostly interference-limited (90.9% low-SINR), suggesting mild impact for these pixels. Load factor of 0.012 shows ample remaining capacity."
+      },
+      {
+        "backup_usid": "USID_28",
+        "absorption_fraction_of_target": 0.16,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -75.42,
+        "sinr_regime_impact_note": "mostly_mild",
+        "post_outage_load_factor": 0.004,
+        "overload_risk": "low",
+        "assessment": "USID_28 absorbs 16% of target pixels (all 100% low-SINR, mostly_mild regime). RSRP p50=-75.42 dBm is good (above -80 dBm threshold). Post-outage load factor of 0.004 is negligible."
+      },
+      {
+        "backup_usid": "USID_31",
+        "absorption_fraction_of_target": 0.08,
+        "handover_quality": "good",
+        "rsrp_p50_in_zone_dbm": -74.79,
+        "sinr_regime_impact_note": "mostly_mild",
+        "post_outage_load_factor": 0.009,
+        "overload_risk": "low",
+        "assessment": "USID_31 absorbs only 8% of target pixels (4 pixels). Signal quality is good (p50=-74.79 dBm, 100% above -90 dBm) and all absorbed pixels are interference-limited (100% low-SINR). Marginal contribution overall given its geographic distance north of the target."
+      }
+    ],
+    "load_redistribution_verdict": "adequate",
+    "verdict_reasoning": [
+      "All 5 backup USIDs show post_outage_load_factor <= 0.012, well below the 0.5 medium threshold — no congestion risk on any backup node",
+      "All backup handover quality ratings are 'good' (100% of absorbed pixels above -90 dBm threshold)",
+      "The primary concern is not load but hard coverage holes: 24% of dominant pixels (12/50) have no backup, resulting in guaranteed service loss for those pixels"
+    ]
+  },
+  "key_findings_for_stage3": [
+    "USID_00's compact dominant cluster is centered near 33.032N/-96.692W with USID_26 providing coverage from the west/NW and USID_41 from the north",
+    "24% hard coverage holes (12 pixels) are spatially distributed within the dominant zone; their exact location relative to roads and buildings is critical for user impact assessment",
+    "SINR within the dominant area is predominantly interference-limited (mean 5.46 dB, 60% < 5 dB), indicating backups are already competitive — handover quality post-shutdown should be moderate to good for non-hole pixels",
+    "USID_30 and USID_28 cover the eastern margin of USID_00's area from the east; the western portion is well-served by USID_26"
+  ],
+  "uncertainty": {
+    "level": "low",
+    "reasons": [
+      "All key statistics read directly from pre-computed preprocessing_stats.json with no inference required",
+      "SINR regime classification is unambiguous (60% low-SINR → mostly_mild)",
+      "Spatial claims are consistent with RSRP image observations"
+    ]
+  }
+}

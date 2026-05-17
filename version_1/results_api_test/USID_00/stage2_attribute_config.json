@@ -1,0 +1,113 @@
+{
+  "usids": [
+    {
+      "usid": "USID_00",
+      "capacity_score": 25.6,
+      "tower_type": "macro",
+      "active_band_count": 4,
+      "technology_profile": "5G-dominant",
+      "operational_role": "mixed",
+      "role_confidence": "high",
+      "key_observations": [
+        "5G-dominant macro with 4G:4-cell + 5G:6-cell configuration and 4 active bands (700/1800/2600/3500 MHz) — broadest spectrum footprint among the analyzed cluster",
+        "Band 3500 MHz (mmWave/FR2-adjacent) with 4 cells indicates capacity-layer 5G intended for dense coverage; combined with 700 MHz low-band gives both coverage and capacity depth",
+        "40m tower height is at the upper end of the macro range, consistent with the relatively strong p50 RSRP of -70.6 dBm across the (admittedly small) dominant zone",
+        "Capacity score of 25.6 is the joint-highest in the cluster (tied with USID_28) — represents significant 5G throughput capability that will be lost during the shutdown window"
+      ]
+    },
+    {
+      "usid": "USID_26",
+      "capacity_score": 15.6,
+      "tower_type": "macro",
+      "active_band_count": 2,
+      "technology_profile": "mixed-4G-5G",
+      "operational_role": "mixed",
+      "role_confidence": "high",
+      "key_observations": [
+        "Primary backup for USID_00, but with capacity_score 15.6 — only 61% of USID_00's 25.6. This represents a material reduction in available throughput for absorbed users.",
+        "4G-heavy (8×4G vs 2×5G) with only 2 active bands (1800/2600 MHz) — no low-band 700 MHz coverage and no mmWave/3500 MHz layer. 5G NR users handing over here will receive a degraded 5G experience.",
+        "Macro at 35m — comparable propagation to USID_00 but lower spectral diversity limits peak throughput"
+      ]
+    },
+    {
+      "usid": "USID_41",
+      "capacity_score": 23.4,
+      "tower_type": "micro",
+      "active_band_count": 2,
+      "technology_profile": "5G-dominant",
+      "operational_role": "capacity-oriented",
+      "role_confidence": "high",
+      "key_observations": [
+        "5G-dominant micro (20m) with 8×5G cells and 2 active bands (2600/3500 MHz) — capacity-oriented hotspot rather than coverage anchor",
+        "High 5G density but limited coverage radius due to micro tower height and mid/high-band-only configuration; dominance footprint (0.0151) is localized",
+        "Second-largest backup absorber (42% of USID_00's pixels), good match for 5G users seeking throughput continuity"
+      ]
+    },
+    {
+      "usid": "USID_30",
+      "capacity_score": 15.6,
+      "tower_type": "macro",
+      "active_band_count": 2,
+      "technology_profile": "mixed-4G-5G",
+      "operational_role": "mixed",
+      "role_confidence": "high",
+      "key_observations": [
+        "Identical profile to USID_26 (8×4G, 2×5G, 35m, 2 bands at 1800/2600 MHz, capacity_score 15.6) — similar coverage and capacity limitations apply",
+        "Covers 22% of USID_00's dominant pixels from the east; together USID_26 + USID_41 + USID_30 account for 110% overlap (multi-counted pixels), providing distributed coverage across the cluster"
+      ]
+    },
+    {
+      "usid": "USID_28",
+      "capacity_score": 25.6,
+      "tower_type": "macro",
+      "active_band_count": 4,
+      "technology_profile": "5G-dominant",
+      "operational_role": "mixed",
+      "role_confidence": "high",
+      "key_observations": [
+        "Identical configuration to USID_00 (4×4G, 6×5G, 40m, 4 bands, capacity_score 25.6) — highest capacity among backup nodes",
+        "Absorbs only 16% of USID_00's pixels (eastern fringe), so its high capacity is largely underutilized relative to the outage impact",
+        "5G users handing over to USID_28 will see minimal throughput degradation — same technology profile as the target"
+      ]
+    },
+    {
+      "usid": "USID_31",
+      "capacity_score": 23.4,
+      "tower_type": "micro",
+      "active_band_count": 2,
+      "technology_profile": "5G-dominant",
+      "operational_role": "capacity-oriented",
+      "role_confidence": "high",
+      "key_observations": [
+        "Identical to USID_41 (2×4G, 8×5G, 20m, 2600/3500 MHz, capacity_score 23.4) — micro 5G capacity node",
+        "Absorbs only 8% of USID_00's pixels (4 pixels) — marginal contributor given geographic separation"
+      ]
+    }
+  ],
+  "nsa_5g_downgrade_risk": {
+    "flagged": false,
+    "target_5g_cells": 6,
+    "primary_backup_5g_cells": 2,
+    "affected_fraction_estimate": 0.0078,
+    "explanation": "Primary backup USID_26 has 5G_cells=2 (not zero), so the strict NSA-downgrade flag is not triggered. However, USID_26's 5G capacity is significantly lower (2 cells vs USID_00's 6 cells, and no 3500 MHz band), meaning 5G NR users handing over to USID_26 may experience noticeably reduced NR throughput. USID_41 and USID_28 are better 5G alternatives if reachable. Estimated affected_fraction = (6/10) × 0.013 = 0.0078 — very small given USID_00's limited dominance footprint."
+  },
+  "overall_capacity_verdict": "adequate",
+  "capacity_verdict_reasoning": [
+    "All 5 backup USIDs have post_outage_load_factor <= 0.012 (well below 0.5 medium threshold), confirming no congestion risk regardless of which backup absorbs USID_00's small traffic volume",
+    "USID_00's total dominant area is only 50 pixels (1.3% of total) — the absolute traffic volume to be redistributed is small, making overload structurally unlikely even with lower-capacity backups like USID_26 (score 15.6) and USID_30 (score 15.6)",
+    "USID_28 (capacity_score 25.6) and USID_41 (23.4) provide high-capacity 5G backup for users in the eastern and northern portions of the dominant area respectively"
+  ],
+  "key_findings_for_stage4": [
+    "USID_00 is a 5G-dominant, 4-band macro with the highest capacity score (25.6) in the cluster — shutdown represents a net loss of significant 5G NR throughput capability from this geographic pocket",
+    "Primary backup USID_26 has only 61% of USID_00's capacity and a 4G-heavy profile — 5G users will experience reduced NR speeds but service continuity is maintained",
+    "The 24% hard coverage hole (12 pixels, no backup at all) is the dominant impact factor — attribute analysis confirms no backup cell covers these pixels, not merely an underserved area"
+  ],
+  "uncertainty": {
+    "level": "low",
+    "reasons": [
+      "All capacity_scores read directly from preprocessing_stats.json capacity_summary — no recomputation performed",
+      "Tower types derived strictly from height thresholds as defined (40m=macro, 35m=macro, 20m=micro)",
+      "Attribute CSV values are directly verifiable against pre-computed fields"
+    ]
+  }
+}

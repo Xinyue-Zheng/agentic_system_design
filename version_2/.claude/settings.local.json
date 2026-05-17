@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python *)",
+      "Bash(pip install *)",
+      "Bash(python3 -m pip install pydantic -q)",
+      "Bash(python3 *)",
+      "Bash(kill %1)",
+      "Bash(strace -p 2147268 -e trace=write,openat -f)",
+      "Bash(kill 2147266 2147268)"
+    ]
+  }
+}

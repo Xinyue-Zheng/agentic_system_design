@@ -1,0 +1,142 @@
+{
+  "verification_summary": {
+    "total_checks": 15,
+    "passed": 15,
+    "failed": 0,
+    "flagged": 0,
+    "overall_result": "PASS"
+  },
+  "checks": [
+    {
+      "check_id": "V1",
+      "description": "Every USID role label matches preprocessing inferred_role",
+      "result": "PASS",
+      "expected": "All 6 USIDs: edge-limited",
+      "found": "All 6 match preprocessing exactly",
+      "note": "All sites edge-limited (dom_frac < 0.03 for all)."
+    },
+    {
+      "check_id": "V2",
+      "description": "Every cited dominant_pixel_fraction within +/-0.01 of pre-computed",
+      "result": "PASS",
+      "expected": "USID_00=0.0163, USID_27=0.0206, USID_29=0.0219, USID_41=0.0125, USID_37=0.0088, USID_31=0.0156",
+      "found": "Max diff = 0.0000",
+      "note": "Zero deviation."
+    },
+    {
+      "check_id": "V3",
+      "description": "Every cited rsrp_p50_dbm within +/-2 dBm of pre-computed",
+      "result": "PASS",
+      "expected": "USID_00=-57.0, USID_27=-58.58, USID_29=-57.96, USID_41=-53.94, USID_37=-57.28, USID_31=-52.75",
+      "found": "Max diff = 0.00 dBm",
+      "note": "Zero deviation."
+    },
+    {
+      "check_id": "V4",
+      "description": "coverage_hole_fraction within +/-0.01 of pre-computed",
+      "result": "PASS",
+      "expected": "0.1154",
+      "found": "Stage 1: 0.1154, Stage 3: 0.1154",
+      "note": "Zero deviation across all stages."
+    },
+    {
+      "check_id": "V5",
+      "description": "Each post_outage_load_factor within +/-0.05 of pre-computed",
+      "result": "PASS",
+      "expected": "USID_27=0.013, USID_29=0.011, USID_41=0.012, USID_37=0.005, USID_31=0.008",
+      "found": "Max diff = 0.0000",
+      "note": "Zero deviation."
+    },
+    {
+      "check_id": "V6",
+      "description": "Each absorption_fraction_of_target within +/-0.02 of pre-computed",
+      "result": "PASS",
+      "expected": "USID_27=0.6154, USID_29=0.4231, USID_41=0.3462, USID_37=0.2692, USID_31=0.0769",
+      "found": "Max diff = 0.0000",
+      "note": "Zero deviation."
+    },
+    {
+      "check_id": "V7",
+      "description": "overload_risk labels match thresholds (>0.8=high, >0.5=medium, else low)",
+      "result": "PASS",
+      "expected": "All low (all load factors ≤ 0.013)",
+      "found": "All 5 backups: overload_risk = low",
+      "note": "Load factors are 30-100× below the medium-risk threshold."
+    },
+    {
+      "check_id": "V8",
+      "description": "sinr_regime_impact_note matches preprocessing per_backup sinr_regime_impact_note",
+      "result": "PASS",
+      "expected": "USID_27=mixed, USID_29=mostly_mild, USID_41=mixed, USID_37=mixed, USID_31=mostly_mild",
+      "found": "Stage 1 exact match on all five",
+      "note": "Stage 1 sinr_regime_impact_note is the preprocessing-derived per_backup field; Stage 3 sinr_regime is the updated three-signal zone classification — these are distinct fields serving different purposes."
+    },
+    {
+      "check_id": "V9",
+      "description": "Stage 2 capacity_scores match pre-computed within +/-0.5",
+      "result": "PASS",
+      "expected": "USID_00=25.6, USID_27=23.4, USID_29=25.6, USID_41=15.6, USID_37=25.6, USID_31=22.4",
+      "found": "Max diff = 0.00",
+      "note": "Scores correctly read from preprocessing; no recomputation."
+    },
+    {
+      "check_id": "V10",
+      "description": "Tower types match height rules (<25m=micro, 25-45m=macro, >45m=tall_macro)",
+      "result": "PASS",
+      "expected": "USID_00=macro(40m), USID_27=micro(20m), USID_29=macro(40m), USID_41=macro(35m), USID_37=macro(40m), USID_31=tall_macro(48m)",
+      "found": "All Stage 2 tower types match height rules exactly",
+      "note": "All heights are unambiguous — 20m=micro, 35/40m=macro, 48m=tall_macro."
+    },
+    {
+      "check_id": "V11",
+      "description": "If C1 triggered (hole<0.05 AND all overload=low): level<=2",
+      "result": "PASS",
+      "expected": "C1 NOT triggered — hole_fraction=0.1154 > 0.05",
+      "found": "C1_applied=false",
+      "note": "Correct — C1 condition not met."
+    },
+    {
+      "check_id": "V12",
+      "description": "If C2 triggered (any is_critical_infrastructure=true): level>=3",
+      "result": "PASS",
+      "expected": "C2 NOT triggered — no critical infrastructure in Stage 3",
+      "found": "C2_applied=false; all is_critical_infrastructure=false",
+      "note": "Correct — no hospital or major expressway identified."
+    },
+    {
+      "check_id": "V13",
+      "description": "If C3 triggered (mostly_mild): severity adjusted down one level",
+      "result": "PASS",
+      "expected": "C3 triggered (dominant_area_impact_regime=mostly_mild, dominant_area_mild_fraction=1.0); base Level 2 → Level 1",
+      "found": "C3_applied=true; user_impact_level=1; impact_severity=low",
+      "note": "Correct. dominant_area_mild_fraction=1.0 and dominant_area_severe_fraction=0.0 are unambiguous. Base Level 2 (holes 5-20%) correctly reduced to Level 1."
+    },
+    {
+      "check_id": "V14",
+      "description": "If C4 triggered (overloaded): severity adjusted up one level",
+      "result": "PASS",
+      "expected": "C4 NOT triggered — verdict=adequate",
+      "found": "C4_applied=false; verdict=adequate",
+      "note": "Correct — no overload condition."
+    },
+    {
+      "check_id": "V15",
+      "description": "Stage 4 level consistent with Stage 1 + Stage 3 combined evidence",
+      "result": "PASS",
+      "expected": "Level 1/low after C3; most affected zone=residential S (high, coverage hole); Stage 3 worst zone=high",
+      "found": "level=1, severity=low, most_affected=[residential S], Stage 3 worst=high",
+      "note": "Fully consistent. The two LOW zones (residential NW, SE) reflect interference_limited three-signal classification — correctly not listed as most affected. Overall Level 1/low well-supported by all stage evidence after C3."
+    }
+  ],
+  "critical_failures": [],
+  "recommendations": [
+    "No critical failures — result is verified and trustworthy for operational use.",
+    "Monitor the S/SW residential fringe (11.54% hole, 3 pixels) during the 08:00-12:00 window — users here have no handover target.",
+    "Consider temporary coverage (COW or neighbour parameter tuning toward S/SW edge) to close the 3-pixel hole before the scheduled outage."
+  ],
+  "verified_final_rating": {
+    "user_impact_level": 1,
+    "impact_severity": "low",
+    "is_verified": true
+  }
+}

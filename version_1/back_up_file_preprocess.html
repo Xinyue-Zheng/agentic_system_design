@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>preprocessing_stats.json — Field Reference</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 900px; margin: 0 auto; padding: 24px 20px; background: #fff; color: #222; }
+  h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 24px; }
+
+  .sec { border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 14px; overflow: hidden; }
+  .sec-hdr { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; background: #f7f7f5; user-select: none; }
+  .sec-hdr:hover { background: #f0f0ed; }
+  .sec-title { font-size: 14px; font-weight: 600; }
+  .sec-sub { font-size: 11px; color: #888; margin-left: 10px; font-weight: 400; }
+  .chev { font-size: 11px; color: #aaa; transition: transform 0.2s; }
+  .closed .chev { transform: rotate(-90deg); }
+  .closed .sec-body { display: none; }
+  .sec-body { padding: 4px 16px 14px; }
+
+  .grp { font-size: 11px; font-weight: 600; color: #666; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px solid #eee; letter-spacing: 0.03em; text-transform: uppercase; }
+
+  table { width: 100%; border-collapse: collapse; }
+  tr { border-bottom: 1px solid #f0f0f0; }
+  tr:last-child { border-bottom: none; }
+  td { padding: 8px 6px; vertical-align: top; }
+  td:first-child { width: 210px; font-family: "SF Mono", "Fira Code", monospace; font-size: 11px; color: #222; line-height: 1.6; white-space: pre-line; }
+  td:last-child { font-size: 12px; color: #444; line-height: 1.6; }
+  .calc { font-family: "SF Mono", "Fira Code", monospace; font-size: 10px; color: #999; margin-top: 3px; line-height: 1.5; }
+
+  .badge { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 10px; font-weight: 500; margin-bottom: 6px; }
+  .b1 { background: #E1F5EE; color: #0F6E56; }
+  .b2 { background: #EEEDFE; color: #534AB7; }
+  .b3 { background: #FAEEDA; color: #854F0B; }
+  .b4 { background: #FAECE7; color: #993C1D; }
+</style>
+</head>
+<body>
+
+<h1>preprocessing_stats.json — Complete Field Reference</h1>
+<p class="subtitle">Step 0 output — all fields computed locally in Python, no API calls. Agents read these as ground truth facts.</p>
+
+<!-- ─── SECTION 1: coverage_summary ──────────────────────────────────── -->
+<div class="sec" id="s1">
+<div class="sec-hdr" onclick="document.getElementById('s1').classList.toggle('closed')">
+  <span><span class="sec-title"><span class="badge b1">coverage_summary</span></span><span class="sec-sub">per_usid + area_level — from pixel JSON</span></span>
+  <span class="chev">▾</span>
+</div>
+<div class="sec-body">
+
+<div class="grp">per_usid [ USID_XX ] — one entry per base station</div>
+<table>
+<tr><td>tower_lat
+tower_lon</td><td>Geographic position of this base station.
+<div class="calc">Inferred from the first pixel where this USID appears as dominant. Not from any metadata header — real data compatible.</div></td></tr>
+<tr><td>dominant_pixel_count
+dominant_pixel_fraction</td><td>How much of the total area this USID owns — pixels where it has the strongest RSRP signal.
+<div class="calc">count(dominant.ID == USID) / total_pixels</div></td></tr>
+<tr><td>backup_pixel_count
+backup_pixel_fraction</td><td>Pixels where this USID appears as 2nd or 3rd strongest (backup1 or backup2 slot). Indicates spatial reach beyond its own dominant area.
+<div class="calc">count(backup1.ID==USID or backup2.ID==USID) / total_pixels</div></td></tr>
+<tr><td>inferred_role</td><td>Network role classification based on dominant pixel fraction.
+<div class="calc">≥30% → dominant-anchor | 10-30% → strong-supporting | 3-10% → localized-supporting | &lt;3% → edge-limited
+(thresholds: engineering choice — confirm with advisor)</div></td></tr>
+<tr><td>rsrp_sample_count</td><td>Total RSRP readings collected from both dominant and backup pixel slots. Broader than dominant-only — captures full spatial reach.
+<div class="calc">count of all pixels where this USID appears in any slot (dominant, backup1, or backup2)</div></td></tr>
+<tr><td>rsrp_mean_dbm
+rsrp_p10_dbm
+rsrp_p50_dbm
+rsrp_p90_dbm</td><td>RSRP distribution across all pixels this USID reaches. p10 = weakest 10%, p50 = median, p90 = strongest 10%.
+<div class="calc">All RSRP samples sorted → index at 0.10 / 0.50 / 0.90 × n</div></td></tr>
+<tr><td>rsrp_pct_above_excellent
+rsrp_pct_above_good
+rsrp_pct_above_moderate</td><td>What fraction of pixels receive strong enough signal from this USID. Used for role confidence and Stage 1 quality assessment.
+<div class="calc">excellent: &gt;-80 dBm | good: &gt;-90 dBm | moderate: &gt;-100 dBm
+(industry convention — not directly from 3GPP, confirm with advisor)</div></td></tr>
+</table>
+
+<div class="grp">area_level — aggregated across ALL pixels in the entire network</div>
+<table>
+<tr><td>total_pixels</td><td>Total pixel count in the coverage grid. Grid size derived from unique lat/lon coordinate values — no header metadata required.
+<div class="calc">len(unique_lats) × len(unique_lons)</div></td></tr>
+<tr><td>sinr_mean_db
+sinr_pct_excellent
+sinr_pct_good
+sinr_pct_moderate</td><td>SINR distribution across the whole area. Tells Stage 3 whether the network is generally interference-limited (dense urban, low SINR) or noise-limited (sparse deployment, high SINR).
+<div class="calc">excellent: &gt;20 dB | good: &gt;13 dB | moderate: &gt;0 dB
+(vendor-defined thresholds — not in 3GPP, confirm with advisor)</div></td></tr>
+<tr><td>throughput_mean_mbps
+throughput_pct_high
+throughput_pct_medium</td><td>Throughput distribution. In synthetic data computed from Shannon capacity formula; in real data measured directly. Kept for future use in impact quantification.
+<div class="calc">high: &gt;50 Mbps | medium: &gt;10 Mbps (arbitrary — confirm with advisor)</div></td></tr>
+<tr><td>rsrq_mean_db
+rsrq_pct_excellent
+rsrq_pct_good</td><td>RSRQ measures signal quality relative to total received power. Poor RSRQ with good RSRP indicates heavy interference. Cross-validates SINR readings.
+<div class="calc">excellent: &gt;-10 dB | good: &gt;-14 dB (industry convention — confirm with advisor)</div></td></tr>
+<tr><td>sinr_rsrq_consistent
+sinr_tp_consistent</td><td>Physics sanity check flags. Both RSRQ and throughput are monotone functions of SINR — low correlation may indicate measurement artifacts in real operator data.
+<div class="calc">True if |corr(SINR, RSRQ)| &gt; 0.7 AND |corr(SINR, TP)| &gt; 0.7</div></td></tr>
+</table>
+</div>
+</div>
+
+<!-- ─── SECTION 2: capacity_summary ──────────────────────────────────── -->
+<div class="sec" id="s2">
+<div class="sec-hdr" onclick="document.getElementById('s2').classList.toggle('closed')">
+  <span><span class="sec-title"><span class="badge b2">capacity_summary</span></span><span class="sec-sub">per USID — from attribute CSV, agents read as pre-computed facts</span></span>
+  <span class="chev">▾</span>
+</div>
+<div class="sec-body">
+<div class="grp">capacity_summary [ USID_XX ] — computed locally in Step 0, never recomputed by agents</div>
+<table>
+<tr><td>capacity_score</td><td>Composite score estimating how much radio capacity this site can provide. Higher = can absorb more traffic after shutdown.
+<div class="calc">(4G_cells×1.0 + 5G_cells×2.0) × (1 + 0.15×active_band_count)
+Weights are heuristics — confirm with advisor or replace with PRB utilization.</div></td></tr>
+<tr><td>capacity_formula</td><td>Human-readable audit string showing the exact numbers used in the calculation. Agents and Stage 5 verification can check the score against this string.
+<div class="calc">e.g. "(6×1.0 + 4×2.0) × (1 + 0.15×3) = 20.9"</div></td></tr>
+<tr><td>active_band_count</td><td>Number of distinct frequency bands with at least one configured cell. More bands = more spectrum diversity = higher capacity bonus.
+<div class="calc">count of {Band_700, Band_1800, Band_2600, Band_3500} columns where value &gt; 0</div></td></tr>
+<tr><td>tower_height_m
+tower_type</td><td>Physical tower height from the attribute CSV and its engineering classification. Taller towers cover larger geographic areas.
+<div class="calc">&lt;25 m → micro | 25-45 m → macro | &gt;45 m → tall_macro (engineering convention — confirm with advisor)</div></td></tr>
+<tr><td>technology_profile</td><td>Whether this site is 4G-only, 5G-only, 5G-dominant, or mixed — determined from cell counts. Key input for NSA 5G downgrade risk detection in Stage 2.
+<div class="calc">5G&gt;0 and 4G=0 → 5G-only | 5G&gt;4G → 5G-dominant | 4G&gt;0 and 5G=0 → 4G-only | else → mixed</div></td></tr>
+<tr><td>operational_role</td><td>Whether this site is deployed for wide area coverage (low-band, 4G) or dense traffic capacity (high-band, 5G-heavy).
+<div class="calc">has Band_3500 + no Band_700 + 5G&gt;4G → capacity-oriented
+has Band_700 + 5G=0 → coverage-oriented | else → mixed</div></td></tr>
+<tr><td>4G_cells
+5G_cells</td><td>Raw cell counts from the attribute CSV — the direct inputs to the capacity formula and technology profile classification.</td></tr>
+</table>
+</div>
+</div>
+
+<!-- ─── SECTION 3: overlap_info ───────────────────────────────────────── -->
+<div class="sec" id="s3">
+<div class="sec-hdr" onclick="document.getElementById('s3').classList.toggle('closed')">
+  <span><span class="sec-title"><span class="badge b3">overlap_info</span></span><span class="sec-sub">sorted list — all USIDs ranked by backup coverage of target's area</span></span>
+  <span class="chev">▾</span>
+</div>
+<div class="sec-body">
+<div class="grp">overlap_info [ ] — one entry per USID that appears in target's backup slots, sorted by overlap_fraction descending</div>
+<table>
+<tr><td>usid</td><td>The USID being evaluated as a potential neighbor of the target. List sorted by overlap_fraction descending — most important neighbors first.</td></tr>
+<tr><td>overlap_count</td><td>How many of the target's dominant pixels list this USID in backup1 or backup2 — raw count before normalizing.
+<div class="calc">count(target_dom pixels where backup1.ID==this or backup2.ID==this)</div></td></tr>
+<tr><td>overlap_fraction</td><td>Fraction of the target's dominant pixels where this USID serves as a fallback. The primary ranking metric — Stage 1 uses this to decide which neighbors matter most.
+<div class="calc">overlap_count / target_dominant_pixels</div></td></tr>
+<tr><td>is_neighbor</td><td>Whether this USID qualifies as an active neighbor — meaning it is a frequent fallback for the target's users. Only neighbors get their own RSRP image generated and appear in Stage 1 analysis.
+<div class="calc">True if overlap_fraction &gt; 0.05 (5% threshold — mirrors 3GPP SON neighbor list convention in TS 32.541, confirm with advisor)</div></td></tr>
+</table>
+</div>
+</div>
+
+<!-- ─── SECTION 4: load_redistribution ───────────────────────────────── -->
+<div class="sec" id="s4">
+<div class="sec-hdr" onclick="document.getElementById('s4').classList.toggle('closed')">
+  <span><span class="sec-title"><span class="badge b4">load_redistribution</span></span><span class="sec-sub">area-level + per_backup — impact of target shutdown on each neighbor</span></span>
+  <span class="chev">▾</span>
+</div>
+<div class="sec-body">
+
+<div class="grp">area-level — characterization of the target's dominant area as a whole</div>
+<table>
+<tr><td>target_dominant_pixels
+target_dominant_fraction</td><td>How large the target's coverage footprint is — the exact set of pixels directly affected by the shutdown.
+<div class="calc">count(dominant.ID == target_usid) / total_pixels</div></td></tr>
+<tr><td>coverage_hole_pixels
+coverage_hole_fraction</td><td>Pixels in the target's dominant area where backup1 is None — no other USID was within the signal gap threshold. These become complete dead zones after shutdown. Expected &lt;5% in a well-planned urban network.
+<div class="calc">count(target_dom where backup1==None) / target_dominant_pixels</div></td></tr>
+<tr><td>target_dom_sinr_mean
+target_dom_high_sinr_fraction
+target_dom_low_sinr_fraction</td><td>SINR statistics within the target's dominant area only — not the whole network. Used for cross-validation and Stage 3 SINR map correlation.
+<div class="calc">high_sinr_frac: fraction of target's pixels with SINR &gt;10 dB
+low_sinr_frac: fraction with SINR &lt;5 dB</div></td></tr>
+<tr><td>dominant_area_severe_fraction
+dominant_area_mild_fraction</td><td>Fraction of the target's dominant pixels classified as severe or mild impact by the three-signal classifier. Inputs to the area-level regime verdict.
+<div class="calc">severe = (noise_limited + environment_attenuated) pixels
+mild = interference_limited pixels
+classify_pixel_regime(sinr, dom_rsrp, gap=0) per pixel</div></td></tr>
+<tr><td>dominant_area_impact_regime</td><td>Overall severity verdict for the target's entire dominant area. Stage 4 hard constraint C3 uses this to adjust the final user impact level.
+<div class="calc">severe_frac &gt;0.5 → mostly_severe | mild_frac &gt;0.5 → mostly_mild | else → mixed</div></td></tr>
+<tr><td>primary_backup_usid</td><td>The single most important backup — the USID that would absorb the largest fraction of the target's traffic after shutdown.
+<div class="calc">argmax(absorption_fraction_of_target) across all per_backup entries</div></td></tr>
+</table>
+
+<div class="grp">per_backup [ USID_XX ] — Q1: can it serve? Q2: can it handle load? Q3: how severe is the impact?</div>
+<table>
+<tr><td>absorption_pixel_count
+absorption_fraction_of_target
+absorption_fraction_of_total</td><td>How many of the target's dominant pixels fall back to this USID in any backup slot. Note: fractions can sum to &gt;100% because one pixel can be absorbed by two different backups simultaneously.
+<div class="calc">count / target_dominant_pixels = fraction_of_target
+count / total_pixels = fraction_of_total</div></td></tr>
+<tr><td>rsrp_in_zone_mean_dbm
+rsrp_in_zone_p50_dbm
+rsrp_in_zone_p10_dbm</td><td>Signal strength this backup provides specifically inside the absorbed pixels — not its overall RSRP, only in the zone it would take over. p10 captures the weakest 10% of pixels this backup would serve.
+<div class="calc">collected from backup1.rsrp or backup2.rsrp of absorbed pixels → sorted → percentiles</div></td></tr>
+<tr><td>rsrp_pct_above_good_in_zone</td><td>Fraction of absorbed pixels where this backup provides "good" signal quality (&gt;-90 dBm). Primary input to handover_quality classification.
+<div class="calc">% of absorbed pixels where backup RSRP &gt; -90 dBm</div></td></tr>
+<tr><td>handover_quality</td><td>Whether users can successfully handover to this backup after shutdown — purely a signal quality question, independent of whether the backup is overloaded.
+<div class="calc">pct_above_good ≥70% → good | ≥40% → partial | else → poor
+(thresholds: engineering choice — confirm with advisor)</div></td></tr>
+<tr><td>current_dominant_fraction</td><td>Fraction of total area this backup currently dominates before the shutdown — spatial proxy for its existing traffic load before it absorbs anything.
+<div class="calc">count(dominant.ID == this_backup) / total_pixels</div></td></tr>
+<tr><td>post_outage_load_factor
+overload_risk
+load_mode</td><td>Estimated load on this backup after absorbing the target's traffic. Three possible calculation modes depending on data availability.
+<div class="calc">spatial_proxy (current placeholder):
+  (curr_frac + absorb_frac) / (capacity_score/10)
+  thresholds: &gt;0.8=high &gt;0.5=medium (arbitrary — replace with PRB)
+
+prb_measured (when operator data available):
+  backup_prb_before + (absorption_fraction × target_prb_before)
+  thresholds: &gt;0.85=high &gt;0.70=medium (industry standard, confirm with operator)
+
+spatial_proxy_fallback: PRB CSV provided but missing for this USID</div></td></tr>
+<tr><td>sinr_regime_impact_note</td><td>Severity verdict for the pixels this backup absorbs — derived from three-signal classification across all absorbed pixels. This is what Stage 1 cites in its per-backup assessment and what Stage 5 verifies.
+<div class="calc">(noise_limited + environment_attenuated) &gt;60% → mostly_severe
+interference_limited &gt;60% → mostly_mild | else → mixed</div></td></tr>
+<tr><td>regime_noise_limited_fraction
+regime_interference_limited_fraction
+regime_environment_attenuated_fraction
+regime_mixed_fraction</td><td>Full breakdown of the three-signal pixel classification across all absorbed pixels. Gives Stage 3 verifiable ground truth for the sinr_regime field in each impact zone — fixing the verification gap in the old SINR-only approach.
+<div class="calc">Per absorbed pixel: classify_pixel_regime(sinr, dom_rsrp, gap) → count each regime / absorb_pixel_count
+
+Rules inside classify_pixel_regime():
+  gap&gt;15 + dom_rsrp&gt;-90 + sinr&gt;10  → noise_limited (severe)
+  gap&lt;8  + dom_rsrp&gt;-90 + sinr&lt;5   → interference_limited (mild)
+  gap&lt;8  + dom_rsrp&gt;-90 + sinr≥5   → interference_limited (mild)
+  dom_rsrp ≤ -90 (any gap)           → environment_attenuated (severe)
+  gap&gt;15 + dom_rsrp&gt;-90 + sinr&lt;5   → mixed
+  else                                → mixed</div></td></tr>
+<tr><td>hard_gap_fraction_absorbed
+easy_gap_fraction_absorbed</td><td>Among absorbed pixels, what fraction have a large vs small signal gap between the dominant and this backup. Large gap = backup much weaker than USID_00 was = harder to replace.
+<div class="calc">hard: (dom_rsrp − backup_rsrp) &gt;15 dB — backup barely qualifies
+easy: gap &lt;8 dB — nearly co-dominant
+15 dB matches backup eligibility boundary; 8 dB aligns with 3GPP A3 event offset</div></td></tr>
+</table>
+
+</div>
+</div>
+
+</body>
+</html>

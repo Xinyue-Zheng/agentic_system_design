@@ -1,0 +1,72 @@
+{
+  "target_usid": "USID_00",
+  "shutdown_start": "2024-03-15 08:00",
+  "shutdown_end": "2024-03-15 12:00",
+  "shutdown_duration_hours": 4.0,
+  "overall_rating": {
+    "impact_severity": "low",
+    "user_impact_level": 1,
+    "summary_label": "Localized Coverage Gap, Adequate Backup, Low Network Stress",
+    "confidence": "medium"
+  },
+  "impact_breakdown": {
+    "radio_degradation_risk":   "low",
+    "service_degradation_risk": "moderate",
+    "user_facing_impact_risk":  "low",
+    "load_redistribution_risk": "low",
+    "5g_downgrade_risk":        "none"
+  },
+  "constraint_check": {
+    "C1_applied": false,
+    "C2_applied": false,
+    "C3_applied": true,
+    "C4_applied": false,
+    "C5_applied": false
+  },
+  "most_affected_zones": [
+    {
+      "zone_name": "NW Fringe Coverage Gap",
+      "location": "NW edge of USID_00 dominant area along diagonal arterial road corridor",
+      "impact_severity": "moderate",
+      "primary_cause": ["coverage_loss"],
+      "user_relevance": "medium"
+    },
+    {
+      "zone_name": "Central Residential Core (NW Handover)",
+      "location": "Center and N of USID_00 dominant area, primary USID_27 handover zone",
+      "impact_severity": "low",
+      "primary_cause": ["quality_degradation"],
+      "user_relevance": "medium"
+    },
+    {
+      "zone_name": "S Sector (USID_41 Handover)",
+      "location": "Center-south of USID_00 dominant area toward USID_41",
+      "impact_severity": "low",
+      "primary_cause": ["quality_degradation"],
+      "user_relevance": "low"
+    }
+  ],
+  "main_reasons": [
+    "Coverage hole fraction of 11.54% (3 of 26 dominant pixels) means a small subset of USID_00 users will have no adequate backup signal during the 4-hour shutdown, resulting in genuine service loss rather than quality degradation.",
+    "Dominant area impact regime is 'mostly_mild' (interference-limited SINR, target_dom_low_sinr_fraction=0.6923, mean SINR=3.7 dB) — for the 88.46% of pixels that do have backup, neighbor cells are already competing strongly and post-handover quality will be close to current service levels.",
+    "All five neighbor USIDs show post_outage_load_factor between 0.005 and 0.013 — well below the LOW risk threshold of 0.5 — confirming that the neighbor ring has abundant spare capacity to absorb USID_00's traffic without congestion.",
+    "Primary backup USID_27 (capacity_score=23.4, 8 5G cells, overlap=61.54%) and USID_29 (capacity_score=25.6, overlap=42.31%) both provide good to excellent handover quality (rsrp_p50=-57.6 and -58.83 dBm respectively, 100% above good threshold in zone).",
+    "The 4-hour shutdown window (08:00–12:00) covers the morning traffic peak, meaning all active users in USID_00's area during the busiest hours of the day will be affected — sustained impact across the full outage window rather than transient interruption."
+  ],
+  "mitigating_factors": [
+    "C3 applied: dominant_area_impact_regime = 'mostly_mild' — interference-limited SINR environment means backup cells are already strong competitors, limiting actual user-perceived quality loss for the majority of the dominant area.",
+    "No critical infrastructure (hospitals, emergency services) identified within USID_00's compact 26-pixel dominant footprint, preventing escalation to Level 3 or higher.",
+    "No NSA 5G downgrade risk: primary backup USID_27 has 8 5G cells (vs. USID_00's 6), ensuring 5G continuity for the majority of users on the primary handover path.",
+    "USID_00's edge-limited role (dominant_pixel_fraction=0.0163) means its absolute user footprint is small — even with 11.54% holes, the total number of affected users is limited relative to the broader network.",
+    "All backup USID capacity scores (15.6–25.6) and post-outage load factors (<0.015) indicate the network has substantial headroom; no cascading congestion risk on adjacent cells."
+  ],
+  "final_conclusion": "The 4-hour planned shutdown of USID_00 on 2024-03-15 (08:00–12:00) is assessed as Level 1 / Low severity impact. The site plays an edge-limited role (dominant_pixel_fraction=0.0163) in a dense suburban residential area (Dallas/Richardson TX), and its interference-limited SINR environment (dominant_area_impact_regime='mostly_mild', mean SINR=3.7 dB) ensures that five well-positioned neighbor cells absorb 88.46% of its traffic with good handover quality and negligible load increase (peak post-outage load factor: 0.013). The primary concern is a localized coverage gap affecting 11.54% of the dominant footprint (3 pixels) at the NW fringe along an arterial road corridor, where no backup reaches adequate signal strength — users in this zone will experience a genuine service outage. The 4-hour duration spans the morning peak (sustained impact), but the combination of a small user base, strong backup capacity, interference-limited regime, and absence of critical infrastructure constrains the overall severity. Network operations may consider monitoring USID_27 during the window for any unexpected load anomalies, though statistical thresholds are not at risk.",
+  "confidence": {
+    "level": "medium",
+    "reasons": [
+      "All dominant_pixel_fractions are below 0.05 (edge-limited role for all USIDs), meaning role assignments and coverage estimates are based on a small pixel sample — low role confidence throughout.",
+      "Coverage hole fraction of 11.54% (3 pixels) is computed from a sparse 26-pixel dominance footprint; small absolute counts increase percentage-level variance.",
+      "Real map available and confirms suburban residential character, but precise land-use classification within the 26-pixel footprint cannot be resolved at pixel level — the absence of visible critical infrastructure is likely but not guaranteed."
+    ]
+  }
+}

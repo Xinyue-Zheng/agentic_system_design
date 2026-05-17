@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /workspace/version_3/planner_output)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 *)",
+      "Bash(python *)",
+      "Bash(claude --version)",
+      "Bash(claude -p --allowedTools Write \"Say hello back\")",
+      "Bash(claude -p --help)",
+      "Bash(claude *)",
+      "Bash(xargs -I{} basename {})"
+    ]
+  },
+  "disabledMcpjsonServers": [
+    "telecom_data"
+  ]
+}
