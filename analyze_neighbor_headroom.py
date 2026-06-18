@@ -149,6 +149,57 @@ def gross_by_hour(df, cell_col, *, datetime_col="DATETIME",
         site = site.reindex(hours)
     return site
 
+def plot_neighbor_prb_hourly(df, cell_col, *, datetime_col="DATETIME",
+                             prb_used_col="PrbUsedDl", prb_avail_col="PrbAvailDl",
+                             window=None, dow=None,
+                             out_path="neighbor_prb_hourly.png"):
+    """Heatmap of each neighbour's PRB utilisation by hour-of-day (historical).
+
+    Rows = neighbours (sorted by their PRB util in the outage window), cols =
+    hour. Lets you see DIRECTLY who is near-saturated, instead of trusting the
+    (1-prb)/prb headroom extrapolation. The outage hours are boxed.
+    """
+    df = df.copy()
+    df[datetime_col] = pd.to_datetime(df[datetime_col])
+    df["hour"] = df[datetime_col].dt.hour
+    df = df[df[datetime_col].dt.dayofweek == dow] if dow is not None \
+        else df[df[datetime_col].dt.dayofweek < 5]
+
+    g = df.groupby([cell_col, "hour"]).agg(used=(prb_used_col, "sum"),
+                                           avail=(prb_avail_col, "sum"))
+    g["util"] = g["used"] / g["avail"].replace(0, np.nan)
+    mat = g["util"].unstack(level=cell_col).T          # rows=neighbour, cols=hour
+    mat = mat.reindex(columns=sorted(mat.columns))
+
+    if window is None:
+        wcols = list(mat.columns)
+    else:
+        lo, hi = window
+        if lo < hi:
+            wcols = [h for h in mat.columns if lo <= h < hi]
+        else:                                            # wraps midnight
+            wcols = [h for h in mat.columns if h >= lo or h < hi]
+    order = mat[wcols].mean(axis=1).sort_values(ascending=False).index
+    mat = mat.loc[order]
+
+    fig, ax = plt.subplots(figsize=(12, max(5, 0.14 * len(mat))))
+    im = ax.imshow(100 * mat.values, aspect="auto", cmap="viridis",
+                   vmin=0, vmax=100)
+    ax.set_xticks(range(len(mat.columns)))
+    ax.set_xticklabels(mat.columns, fontsize=7)
+    ax.set_yticks(range(len(mat)))
+    ax.set_yticklabels(mat.index, fontsize=4)
+    ax.set_xlabel("hour of day")
+    win_pos = [i for i, h in enumerate(mat.columns) if h in wcols]
+    if win_pos:
+        ax.axvspan(min(win_pos) - 0.5, max(win_pos) + 0.5,
+                   fill=False, edgecolor="red", lw=1.5)   # outage hours
+    ax.set_title("Neighbour PRB utilisation (%) by hour — sorted by window load")
+    fig.colorbar(im, ax=ax, label="PRB util (%)")
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=140)
+    print(f"{len(mat)} neighbours -> {out_path}")
+    return mat
 
 def headroom_by_hour(df, cell_col, gross_hourly, overlap, *,
                      datetime_col="DATETIME",
