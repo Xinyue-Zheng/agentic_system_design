@@ -16,7 +16,12 @@ def diverse_sample(df, n=10, cols=("period", "DENSITY"), n_bins=4, random_state=
     Returns the selected rows (original columns and index preserved).
     """
     n = min(n, len(df))
+    df[col] = df[col].apply(ast.literal_eval)
 
+    df = df[
+        df[col].str.len().gt(0)
+        & (df[col].str[0].str.len() == 13)
+    ]
     rng = np.random.default_rng(random_state)
 
     # Build a categorical level for each diversity column.
