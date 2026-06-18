@@ -184,19 +184,23 @@ def headroom_by_hour(df, cell_col, gross_hourly, overlap, *,
         absorbed = np.minimum(demand, gh["headroom"])
         overflow = (demand - absorbed).clip(lower=0)
         rows.append({"hour": hh, "gross": gross_hourly[hh],
+                     "headroom": float(gh["headroom"].sum()),   # total capacity
                      "absorbed": float(absorbed.sum()),
                      "net_loss": float(overflow.sum())})
     res = pd.DataFrame(rows).set_index("hour")
 
     fig, ax = plt.subplots(figsize=(11, 5))
     x = np.arange(len(res))
-    ax.bar(x, res["gross"], color="C7", alpha=0.4, label="gross (at risk)")
-    ax.bar(x, res["net_loss"], color="C3", label="net loss")
+    # stacked bar: absorbed (within headroom) + net loss = gross
+    ax.bar(x, res["absorbed"], color="C2", label="absorbed (within headroom)")
+    ax.bar(x, res["net_loss"], bottom=res["absorbed"], color="C3", label="net loss")
+    # total available headroom as a line (the capacity that existed)
+    ax.plot(x, res["headroom"], "k--o", ms=4, lw=1, label="total headroom (capacity)")
     ax.set_xticks(x); ax.set_xticklabels(res.index)
     ax.set_xlabel("hour of day"); ax.set_ylabel("RRC connections")
-    ax.set_title(f"Per-hour impact  |  total net loss "
+    ax.set_title(f"Per-hour: gross = absorbed + net loss  |  total net loss "
                  f"≈ {res['net_loss'].sum():,.0f} conn·h")
-    ax.legend()
+    ax.legend(fontsize=8)
     fig.tight_layout()
     fig.savefig(out_path, dpi=130)
     print(res.round(1))
