@@ -181,7 +181,34 @@ def build_affected_cells(outage_csv, grab_url, *,
     _write_csv(out_csv, rows)
     print(f"Wrote {len(rows)} rows for {len(affected)} down cell(s) -> {out_csv}")
     return affected
+def affected_to_enb_lists(affected, enb_csv="enb_groups.csv"):
+    """Group the affected-cells mapping by eNodeB.
 
+    Down cells that share an eNodeB collapse into one group, whose value is the
+    deduped list of eNodeBs (own + all neighbour eNodeBs). Each list is ready to
+    feed query_data.
+
+    Args:
+        affected : {down_cell: [down_cell, *neighbour_cell_names]} from
+                   build_affected_cells.
+        enb_csv  : output path; one comma-separated eNodeB list per line.
+    Returns:
+        enb_lists : list[list[str]], one eNodeB list per eNodeB group.
+    """
+    enb_groups = {}
+    for down_cell, cells in affected.items():
+        down_enb = enb_of_cell(down_cell)
+        if not down_enb:
+            continue
+        grp = enb_groups.setdefault(down_enb, set())
+        grp.update(enb_of_cell(c) for c in cells if enb_of_cell(c))
+
+    enb_lists = [sorted(grp) for grp in enb_groups.values()]
+    with open(enb_csv, "w", newline="") as f:
+        for grp in enb_lists:
+            f.write(",".join(grp) + "\n")
+    print(f"Wrote {len(enb_lists)} eNodeB group(s) -> {enb_csv}")
+    return enb_lists
 
 def _write_csv(path, rows):
     fields = ["down_cell", "cell_name", "role", "enb", "overlap_pct",
