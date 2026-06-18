@@ -121,10 +121,12 @@ def summarize_at_risk(df, cell_col, *,
     lo, hi = window
     win = site[(site["hour"] >= lo) & (site["hour"] < hi)]
 
-    per_date_window = win.groupby(["date", "weekend"])["conn"].mean()
-    weekday_window = per_date_window.xs(False, level="weekend")
-    weekend_window = per_date_window.xs(True, level="weekend")
+    per_date_window = win.groupby("date")["conn"].mean()       # index: date
     per_date_peak = site.groupby("date")["conn"].max()         # full-day peak
+    is_weekend = site.groupby("date")["weekend"].first().reindex(per_date_window.index)
+
+    weekday_window = per_date_window[~is_weekend.values]
+    weekend_window = per_date_window[is_weekend.values]
 
     return {
         "window_avg": round(weekday_window.mean(), 1),
