@@ -137,6 +137,7 @@ def summarize_at_risk(df, cell_col, *,
     }
 
 
+
 if __name__ == "__main__":
     df = pd.read_csv("rrc_down_cells.csv")            # your already-queried data
     print(summarize_at_risk(df, cell_col="CELLNAME"))   # the three routing numbers
