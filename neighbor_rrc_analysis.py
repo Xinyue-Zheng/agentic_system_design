@@ -95,6 +95,47 @@ def compare_outage_vs_baseline(df, cell_col, outage_start, outage_end, *,
 
     print(comp.round(2))
     return comp
+def plot_neighbor_rrc_change_bars(df, cell_col, outage_start, outage_end, *,
+                                  datetime_col="DATETIME",
+                                  num_col="RRCConnUEsNum", den_col="RRCConnUEsDen",
+                                  out_path="neighbor_rrc_change.png"):
+    """One bar per neighbour = its RRC change during the outage vs baseline.
+
+    baseline = same hours-of-day (the outage window, wraps midnight) before the
+    outage. Bars sorted; red = dropped, blue = rose. Scales fine to 60+.
+    """
+    df = df.copy()
+    df[datetime_col] = pd.to_datetime(df[datetime_col])
+    outage_start = pd.to_datetime(outage_start)
+    outage_end = pd.to_datetime(outage_end)
+
+    lo, hi = outage_start.hour, outage_end.hour
+    h = df[datetime_col].dt.hour
+    inwin = ((h >= lo) & (h < hi)) if lo < hi else ((h >= lo) | (h < hi))
+    is_outage = (df[datetime_col] >= outage_start) & (df[datetime_col] < outage_end)
+    is_base = (df[datetime_col] < outage_start) & inwin
+
+    def per_cell(mask):
+        d = df[mask].groupby(cell_col).agg(n=(num_col, "sum"), de=(den_col, "sum"))
+        return d["n"] / d["de"].replace(0, np.nan)
+
+    chg = ((per_cell(is_outage) / per_cell(is_base) - 1) * 100).dropna().sort_values()
+
+    fig, ax = plt.subplots(figsize=(max(8, 0.18 * len(chg)), 5))
+    ax.bar(range(len(chg)), chg.values,
+           color=["C3" if v < 0 else "C0" for v in chg])
+    ax.axhline(0, color="k", lw=1)
+    ax.set_xticks(range(len(chg)))
+    ax.set_xticklabels(chg.index, rotation=90, fontsize=5)
+    ax.set_ylabel("RRC connected change vs baseline (%)")
+    ax.set_title("Per-neighbour RRC change during outage (red = drop)")
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=140)
+    print(f"{len(chg)} neighbours: {int((chg < 0).sum())} dropped, "
+          f"{int((chg > 0).sum())} rose")
+    return chg
+
+
 def plot_neighbor_rrc_heatmap(df, cell_col, *,
                               datetime_col="DATETIME",
                               num_col="RRCConnUEsNum", den_col="RRCConnUEsDen",
