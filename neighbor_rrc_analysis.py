@@ -95,6 +95,59 @@ def compare_outage_vs_baseline(df, cell_col, outage_start, outage_end, *,
 
     print(comp.round(2))
     return comp
+def plot_neighbor_rrc_heatmap(df, cell_col, *,
+                              datetime_col="DATETIME",
+                              num_col="RRCConnUEsNum", den_col="RRCConnUEsDen",
+                              outage_start=None, outage_end=None,
+                              zoom_days=2, freq="1h",
+                              out_path="neighbor_rrc_heatmap.png"):
+    """Heatmap of every neighbour's RRC change at once (scales to 60+).
+
+    Rows = neighbours (sorted by their outage-window change), cols = time,
+    colour = RRC connected as % vs that neighbour's own median (red=drop,
+    blue=rise). A vertical red band over the outage window = broad drop; only a
+    few red rows = just those neighbours.
+    """
+    df = df.copy()
+    df[datetime_col] = pd.to_datetime(df[datetime_col])
+    df["conn"] = df[num_col] / df[den_col].replace(0, np.nan)
+    outage_start = pd.to_datetime(outage_start)
+    outage_end = pd.to_datetime(outage_end) if outage_end is not None else outage_start
+    if zoom_days:
+        lo = outage_start - pd.Timedelta(days=zoom_days)
+        hi = outage_end + pd.Timedelta(days=zoom_days)
+        df = df[(df[datetime_col] >= lo) & (df[datetime_col] <= hi)]
+
+    df["t"] = df[datetime_col].dt.floor(freq)
+    mat = df.pivot_table(index=cell_col, columns="t", values="conn",
+                         aggfunc="mean").sort_index(axis=1)
+    # % vs each neighbour's own median -> comparable across sizes; 0 = normal
+    norm = mat.div(mat.median(axis=1), axis=0) - 1
+    owin = (mat.columns >= outage_start) & (mat.columns < outage_end)
+    order = norm.loc[:, owin].mean(axis=1).sort_values().index   # most-dropped first
+    norm = norm.loc[order]
+
+    fig, ax = plt.subplots(figsize=(13, max(5, 0.14 * len(norm))))
+    im = ax.imshow(norm.values, aspect="auto", cmap="RdBu", vmin=-1, vmax=1)
+    cols = norm.columns
+    idx = np.linspace(0, len(cols) - 1, min(10, len(cols))).astype(int)
+    ax.set_xticks(idx)
+    ax.set_xticklabels([cols[i].strftime("%m-%d %Hh") for i in idx],
+                       rotation=45, fontsize=7, ha="right")
+    win_idx = np.where(owin)[0]
+    if len(win_idx):
+        ax.axvspan(win_idx[0] - 0.5, win_idx[-1] + 0.5, fill=False,
+                   edgecolor="k", lw=1.5)                       # outage window
+    ax.set_yticks(range(len(norm)))
+    ax.set_yticklabels(norm.index, fontsize=4)
+    ax.set_title("Neighbour RRC connected — Δ vs own median (red = drop)")
+    fig.colorbar(im, ax=ax, label="Δ vs median")
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=140)
+    print(f"{len(norm)} neighbours -> {out_path}")
+    return norm
+
+
 
 
 if __name__ == "__main__":
