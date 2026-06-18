@@ -40,6 +40,23 @@ def _build_neighbor_url(cell_name, *, cut_off_threshold_db, min_rsrp_db,
     #           f"&percentile_cut_off={percentile_cut_off}")
     raise NotImplementedError("fill in _build_neighbor_url for your endpoint")
 
+def _coerce_cells(value):
+    """Normalize one `down_cell_observed` value into a list of cell-name strings.
+
+    The column holds a stringified Python list (e.g. "['123-4', '123-5']") which
+    is parsed with ast.literal_eval. Also tolerates an already-parsed list or a
+    plain single cell-name string.
+    """
+    if isinstance(value, (list, tuple)):
+        items = value
+    else:
+        s = str(value).strip()
+        try:
+            parsed = ast.literal_eval(s)
+            items = parsed if isinstance(parsed, (list, tuple)) else [parsed]
+        except (ValueError, SyntaxError):
+            items = [s]  # plain single name, not a list literal
+    return [str(c).strip() for c in items if str(c).strip()]
 
 def query_neighbors(cell_name, grab_url, *,
                     cut_off_threshold_db=3.0,
@@ -110,8 +127,15 @@ def build_affected_cells(outage_csv, grab_url, *,
         raise KeyError(f"{down_cell_col!r} not in {outage_csv}; "
                        f"columns are {list(df.columns)}")
 
-    # de-dupe down cells so we don't re-query the same cell across rows
-    down_cells = [c for c in df[down_cell_col].dropna().astype(str).unique()]
+    # each row's down_cell_observed is a (stringified) list of cells; flatten
+    # them all and de-dupe so we don't re-query the same cell across rows
+    down_cells = []
+    seen_down = set()
+    for value in df[down_cell_col].dropna():
+        for cell in _coerce_cells(value):
+            if cell not in seen_down:
+                seen_down.add(cell)
+                down_cells.append(cell)
 
     affected = {}
     rows = []
