@@ -83,7 +83,60 @@ def plot_rrc_load_profile(df, cell_col, *,
     return band, pivot
 
 
+def summarize_at_risk(df, cell_col, *,
+                      datetime_col="DATETIME",
+                      num_col="RRCConnUEsNum",
+                      den_col="RRCConnUEsDen",
+                      window=(19, 23)):
+    """The three numbers that route the next steps, all at hourly granularity.
+
+    Returns dict:
+        window_avg : avg total RRC connected UEs across the down cells during the
+                     outage window, weekday. -> output-1 starting number; its size
+                     decides how much to invest in the coverage/headroom steps.
+        busy_ratio : window_avg / full-day peak. ~1 = outage hits busy hour, so
+                     neighbours are also full -> must check neighbour capacity.
+        window_std : day-to-day spread of the window value (weekday). -> error bar.
+        window_avg_weekend : weekend counterpart, for day-type matching.
+
+    Connected UEs is a LEVEL: summed across cells, time-averaged via
+    sum(Num)/sum(Den). 15-min rows are rolled up to hourly first.
+    """
+    df = df.copy()
+    df[datetime_col] = pd.to_datetime(df[datetime_col])
+
+    # 15-min -> hourly per cell (sum(Num)/sum(Den) = correct time-weighted avg)
+    hourly = (df.set_index(datetime_col)
+                .groupby([cell_col, pd.Grouper(freq="1h")])
+                .agg(Num=(num_col, "sum"), Den=(den_col, "sum"))
+                .reset_index())
+    hourly["conn"] = hourly["Num"] / hourly["Den"].replace(0, np.nan)
+
+    # site total per hour = sum across cells
+    site = hourly.groupby(datetime_col)["conn"].sum().to_frame("conn")
+    site["date"] = site.index.date
+    site["hour"] = site.index.hour
+    site["weekend"] = site.index.dayofweek >= 5
+
+    lo, hi = window
+    win = site[(site["hour"] >= lo) & (site["hour"] < hi)]
+
+    per_date_window = win.groupby(["date", "weekend"])["conn"].mean()
+    weekday_window = per_date_window.xs(False, level="weekend")
+    weekend_window = per_date_window.xs(True, level="weekend")
+    per_date_peak = site.groupby("date")["conn"].max()         # full-day peak
+
+    return {
+        "window_avg": round(weekday_window.mean(), 1),
+        "busy_ratio": round(weekday_window.mean() / per_date_peak.mean(), 2),
+        "window_std": round(weekday_window.std(), 1),
+        "window_avg_weekend": (round(weekend_window.mean(), 1)
+                               if len(weekend_window) else None),
+    }
+
+
 if __name__ == "__main__":
-    # df = pd.read_csv("rrc_down_cells.csv")          # your already-queried data
-    # band, pivot = plot_rrc_load_profile(df, cell_col="CELLNAME")
-    pass
+    df = pd.read_csv("rrc_down_cells.csv")            # your already-queried data
+    print(summarize_at_risk(df, cell_col="CELLNAME"))   # the three routing numbers
+    plot_rrc_load_profile(df, cell_col="CELLNAME")      # the profile plot
+
