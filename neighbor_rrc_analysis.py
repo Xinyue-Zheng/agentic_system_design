@@ -148,8 +148,6 @@ def plot_neighbor_rrc_heatmap(df, cell_col, *,
     return norm
 
 
-
-
 if __name__ == "__main__":
     # df_nbr = pd.read_csv("neighbor_kpi.csv")   # spans baseline month + outage day
     # comp = compare_outage_vs_baseline(
