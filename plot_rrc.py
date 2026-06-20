@@ -9,7 +9,7 @@ Input dataframe columns (adjust the CONFIG block to match yours):
     RRCConnUEsNum   numerator
     RRCConnUEsDen   denominator
 
-rrc at each time point = RRCConnUEsNum / (180 * RRCConnUEsDen)   <-- CONFIRM this
+rrc at each time point = RRCConnUEsNum / 180   (denominator column not used)
 """
 
 import os
@@ -20,17 +20,16 @@ import matplotlib.pyplot as plt
 COL_TIME = "DATETIME"
 COL_ENB  = "ENODEB"          # <-- you said "enodeb (uppercase)"; fix if it's e.g. "enodeb"
 COL_NUM  = "RRCConnUEsNum"
-COL_DEN  = "RRCConnUEsDen"
-RRC_DEN_FACTOR = 180.0       # rrc = num / (RRC_DEN_FACTOR * den)
+COL_DEN  = "RRCConnUEsDen"  # not used in current rrc formula
+RRC_DEN_FACTOR = 180.0       # rrc = num / RRC_DEN_FACTOR
 # -----------------------------------------------------------------------------
 
 
 def compute_rrc(df):
-    """Add an 'rrc' column = num / (180 * den). den == 0 -> NaN (so no inf)."""
+    """Add an 'rrc' column = num / 180."""
     df = df.copy()
     df[COL_TIME] = pd.to_datetime(df[COL_TIME])
-    denom = RRC_DEN_FACTOR * df[COL_DEN]
-    df["rrc"] = df[COL_NUM] / denom.where(denom != 0)   # divide-by-zero -> NaN
+    df["rrc"] = df[COL_NUM] / RRC_DEN_FACTOR
     return df
 
 
@@ -68,7 +67,7 @@ def plot_rrc_per_enodeb(df, save_dir="rrc_plots", show=False,
 
         ax.set_title(f"eNodeB {enb} - RRC vs time")
         ax.set_xlabel("time")
-        ax.set_ylabel("rrc = num / (180 * den)")
+        ax.set_ylabel("rrc = num / 180")
         ax.grid(True, alpha=0.3)
         fig.autofmt_xdate()
         fig.tight_layout()
