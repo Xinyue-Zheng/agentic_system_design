@@ -24,6 +24,22 @@ COL_DEN  = "RRCConnUEsDen"  # not used in current rrc formula
 RRC_DEN_FACTOR = 180.0       # rrc = num / RRC_DEN_FACTOR
 # -----------------------------------------------------------------------------
 
+def fill_gaps_with_zero(df, time_col="DATETIME", enb_col="ENODEB",
+                        value_cols=("RRCConnUEsNum", "RRCConnUEsDen"), freq="1h"):
+    """For each eNodeB, put it on a regular `freq` grid (its own min..max) and
+    fill the value columns at the inserted time points with 0."""
+    df = df.copy()
+    df[time_col] = pd.to_datetime(df[time_col])
+    out = []
+    for enb, sub in df.groupby(enb_col):
+        sub = sub.set_index(time_col).sort_index()
+        sub = sub.reindex(pd.date_range(sub.index.min(), sub.index.max(), freq=freq))
+        sub[enb_col] = enb
+        for c in value_cols:
+            if c in sub.columns:
+                sub[c] = sub[c].fillna(0)
+        out.append(sub.rename_axis(time_col).reset_index())
+    return pd.concat(out, ignore_index=True)
 
 def compute_rrc(df):
     """Add an 'rrc' column = num / 180."""
