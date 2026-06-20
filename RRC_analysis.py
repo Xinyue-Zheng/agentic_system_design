@@ -284,7 +284,6 @@ import os, json
 import pandas as pd
 
 OUT_CSV = "case_results.csv"
-
 done = set(pd.read_csv(OUT_CSV)["target"].astype(str)) if os.path.exists(OUT_CSV) else set()
 
 for _, t in tickets.iterrows():
@@ -292,38 +291,41 @@ for _, t in tickets.iterrows():
     if tgt in done:
         continue
 
-    s, e = times_for_ticket(t["ALARM_TIME"], t["RETURN_TO_SERVICE"])
-    out = analyze_target(tgt, locations, s, e, k=20, min_len=3)
+    # 固定字段,保证成功/失败两种行的 CSV 列都对得上
+    row = {"target": tgt, "target_down": None, "target_down_hours": None,
+           "target_down_times": None, "n_neighbors": None,
+           "n_neighbors_down": None, "neighbours": None, "error": ""}
 
-    z = out["zero_intervals"]                       # 每行 = 一段 down 的 ENODEB/start/end/n_points
+    try:
+        s, e = times_for_ticket(t["ALARM_TIME"], t["RETURN_TO_SERVICE"])
+        out = analyze_target(tgt, locations, s, e, k=20, min_len=3)
 
-    def down_spans(enb):                            # 某个 enb 的所有 down 段(起/止/小时)
-        sub = z[z["ENODEB"].astype(str) == str(enb)] if not z.empty else z
-        return [{"start": str(r["start"]), "end": str(r["end"]), "hours": int(r["n_points"])}
-                for _, r in sub.iterrows()]
+        z = out["zero_intervals"]
+        def down_spans(enb):
+            sub = z[z["ENODEB"].astype(str) == str(enb)] if not z.empty else z
+            return [{"start": str(r["start"]), "end": str(r["end"]), "hours": int(r["n_points"])}
+                    for _, r in sub.iterrows()]
 
-    # 邻居:距离 + 总 down 小时 + 每段 down 的时间
-    neighbours = []
-    for _, r in out["neighbours"].iterrows():
-        spans = down_spans(r["ENODEB"])
-        neighbours.append({
-            "enb": r["ENODEB"],
-            "distance_km": round(float(r["distance_km"]), 3),
-            "down_hours": sum(d["hours"] for d in spans),
-            "down": spans,
+        neighbours = []
+        for _, r in out["neighbours"].iterrows():
+            spans = down_spans(r["ENODEB"])
+            neighbours.append({"enb": r["ENODEB"],
+                               "distance_km": round(float(r["distance_km"]), 3),
+                               "down_hours": sum(d["hours"] for d in spans),
+                               "down": spans})
+
+        tgt_down = down_spans(tgt)
+        row.update({
+            "target_down": out["target_down"],
+            "target_down_hours": sum(d["hours"] for d in tgt_down),
+            "target_down_times": json.dumps(tgt_down, default=str),
+            "n_neighbors": len(neighbours),
+            "n_neighbors_down": sum(n["down_hours"] > 0 for n in neighbours),
+            "neighbours": json.dumps(neighbours, default=str),
         })
-
-    # target 自己
-    tgt_down = down_spans(tgt)
-    row = {
-        "target": tgt,
-        "target_down": out["target_down"],
-        "target_down_hours": sum(d["hours"] for d in tgt_down),
-        "target_down_times": json.dumps(tgt_down, default=str),     # [{start,end,hours},...]
-        "n_neighbors": len(neighbours),
-        "n_neighbors_down": sum(n["down_hours"] > 0 for n in neighbours),
-        "neighbours": json.dumps(neighbours, default=str),          # 每个邻居:enb/distance_km/down_hours/down
-    }
+    except Exception as err:
+        row["error"] = str(err)                          # ← 主 enodeb 找不到等情况
+        print(f"skipped {tgt}: {err}", flush=True)       #   记一下,继续往下推进
 
     pd.DataFrame([row]).to_csv(OUT_CSV, mode="a", header=not os.path.exists(OUT_CSV), index=False)
     print(f"appended {tgt} -> {OUT_CSV}", flush=True)
