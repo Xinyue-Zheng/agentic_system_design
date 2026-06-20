@@ -280,7 +280,46 @@ def analyze_target(target_enb, locations_df, start, end,
     return {"enb_list": enb_list, "neighbours": nbr,
             "kpi_df": kpi_df, "zero_intervals": zeros, "target_down": target_down}
 
+import os, json
+import pandas as pd
 
+OUT_CSV = "case_results.csv"
+
+# 断点续跑:已经写过的 target 跳过(重启就接着没跑完的继续)
+done = set(pd.read_csv(OUT_CSV)["target"].astype(str)) if os.path.exists(OUT_CSV) else set()
+
+for _, t in tickets.iterrows():
+    tgt = str(t["ENODEB"])
+    if tgt in done:
+        continue
+
+    s, e = times_for_ticket(t["ALARM_TIME"], t["RETURN_TO_SERVICE"])
+    out = analyze_target(tgt, locations, s, e, k=20, min_len=3)
+
+    z = out["zero_intervals"]
+    down_hours_by_enb = z.groupby("ENODEB")["n_points"].sum().to_dict() if not z.empty else {}
+    tz = z[z["ENODEB"].astype(str) == tgt] if not z.empty else z   # target 自己的 down 段
+
+    neighbours = [
+        {"enb": r["ENODEB"],
+         "distance_km": round(float(r["distance_km"]), 3),
+         "down_hours": int(down_hours_by_enb.get(r["ENODEB"], 0))}   # 这个邻站有没有也掉 0
+        for _, r in out["neighbours"].iterrows()
+    ]
+
+    row = {
+        "target": tgt,
+        "target_down": out["target_down"],
+        "down_hours": int(tz["n_points"].sum()) if len(tz) else 0,   # target 掉 0 共多少小时
+        "down_start": tz["start"].min() if len(tz) else None,
+        "down_end":   tz["end"].max()   if len(tz) else None,
+        "n_neighbors": len(neighbours),
+        "n_neighbors_down": sum(n["down_hours"] > 0 for n in neighbours),
+        "neighbours": json.dumps(neighbours, default=str),   # 邻站列表 + 距离 + 各自 down 小时
+    }
+
+    pd.DataFrame([row]).to_csv(OUT_CSV, mode="a", header=not os.path.exists(OUT_CSV), index=False)
+    print(f"appended {tgt} -> {OUT_CSV}", flush=True)
 # ================================ USAGE EXAMPLE ================================
 # import pandas as pd
 # from outage_analysis import analyze_target, times_for_ticket
