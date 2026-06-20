@@ -285,7 +285,6 @@ import pandas as pd
 
 OUT_CSV = "case_results.csv"
 
-# 断点续跑:已经写过的 target 跳过(重启就接着没跑完的继续)
 done = set(pd.read_csv(OUT_CSV)["target"].astype(str)) if os.path.exists(OUT_CSV) else set()
 
 for _, t in tickets.iterrows():
@@ -296,26 +295,34 @@ for _, t in tickets.iterrows():
     s, e = times_for_ticket(t["ALARM_TIME"], t["RETURN_TO_SERVICE"])
     out = analyze_target(tgt, locations, s, e, k=20, min_len=3)
 
-    z = out["zero_intervals"]
-    down_hours_by_enb = z.groupby("ENODEB")["n_points"].sum().to_dict() if not z.empty else {}
-    tz = z[z["ENODEB"].astype(str) == tgt] if not z.empty else z   # target 自己的 down 段
+    z = out["zero_intervals"]                       # 每行 = 一段 down 的 ENODEB/start/end/n_points
 
-    neighbours = [
-        {"enb": r["ENODEB"],
-         "distance_km": round(float(r["distance_km"]), 3),
-         "down_hours": int(down_hours_by_enb.get(r["ENODEB"], 0))}   # 这个邻站有没有也掉 0
-        for _, r in out["neighbours"].iterrows()
-    ]
+    def down_spans(enb):                            # 某个 enb 的所有 down 段(起/止/小时)
+        sub = z[z["ENODEB"].astype(str) == str(enb)] if not z.empty else z
+        return [{"start": str(r["start"]), "end": str(r["end"]), "hours": int(r["n_points"])}
+                for _, r in sub.iterrows()]
 
+    # 邻居:距离 + 总 down 小时 + 每段 down 的时间
+    neighbours = []
+    for _, r in out["neighbours"].iterrows():
+        spans = down_spans(r["ENODEB"])
+        neighbours.append({
+            "enb": r["ENODEB"],
+            "distance_km": round(float(r["distance_km"]), 3),
+            "down_hours": sum(d["hours"] for d in spans),
+            "down": spans,
+        })
+
+    # target 自己
+    tgt_down = down_spans(tgt)
     row = {
         "target": tgt,
         "target_down": out["target_down"],
-        "down_hours": int(tz["n_points"].sum()) if len(tz) else 0,   # target 掉 0 共多少小时
-        "down_start": tz["start"].min() if len(tz) else None,
-        "down_end":   tz["end"].max()   if len(tz) else None,
+        "target_down_hours": sum(d["hours"] for d in tgt_down),
+        "target_down_times": json.dumps(tgt_down, default=str),     # [{start,end,hours},...]
         "n_neighbors": len(neighbours),
         "n_neighbors_down": sum(n["down_hours"] > 0 for n in neighbours),
-        "neighbours": json.dumps(neighbours, default=str),   # 邻站列表 + 距离 + 各自 down 小时
+        "neighbours": json.dumps(neighbours, default=str),          # 每个邻居:enb/distance_km/down_hours/down
     }
 
     pd.DataFrame([row]).to_csv(OUT_CSV, mode="a", header=not os.path.exists(OUT_CSV), index=False)
