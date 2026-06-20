@@ -34,22 +34,38 @@ def compute_rrc(df):
     return df
 
 
-def plot_rrc_per_enodeb(df, save_dir="rrc_plots", show=False):
+def plot_rrc_per_enodeb(df, save_dir="rrc_plots", show=False,
+                        highlight=None, highlight_color="tab:red", highlight_alpha=0.15):
     """Draw one RRC-vs-time line chart for EVERY eNodeB in `df` and save them
     all into `save_dir` (one PNG per eNodeB).
 
     show=True also displays each figure inline (handy in a notebook).
+    highlight=(start, end) shades that time window on every plot, e.g.
+        highlight=("2026-06-01 10:00", "2026-06-01 12:30")
     """
     df = compute_rrc(df)
     enbs = sorted(df[COL_ENB].unique())
     os.makedirs(save_dir, exist_ok=True)
+
+    # Pre-parse the highlight window once (numpy datetime64, matches the x axis).
+    hl = None
+    if highlight is not None:
+        hs, he = highlight
+        hl = (pd.to_datetime(hs).to_numpy(), pd.to_datetime(he).to_numpy())
+
     print(f"{len(enbs)} eNodeB(s) -> saving PNGs to '{save_dir}/'")
 
     for enb in enbs:
         sub = df[df[COL_ENB] == enb].sort_values(COL_TIME)
 
         fig, ax = plt.subplots(figsize=(11, 4))
-        ax.plot(sub[COL_TIME], sub["rrc"], marker=".", linewidth=1)
+        ax.plot(sub[COL_TIME].to_numpy(), sub["rrc"].to_numpy(), marker=".", linewidth=1)
+
+        if hl is not None:
+            ax.axvspan(hl[0], hl[1], color=highlight_color, alpha=highlight_alpha,
+                       label="window")
+            ax.legend(loc="upper right", fontsize=8)
+
         ax.set_title(f"eNodeB {enb} - RRC vs time")
         ax.set_xlabel("time")
         ax.set_ylabel("rrc = num / (180 * den)")
