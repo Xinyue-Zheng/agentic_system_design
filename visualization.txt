@@ -1,0 +1,7 @@
+Visualization — Voronoi-based coverage map:
+
+Voronoi tessellation: Compute a Voronoi diagram from all measurement point coordinates (lat/lon). Each Voronoi cell represents the area around one measurement point.
+Cell fill color: Fill each Voronoi cell with the serving eNodeB's base color, shaded by RSRP intensity — darker = stronger signal, lighter = weaker. Normalize RSRP per eNodeB to map onto a color gradient (e.g. LinearSegmentedColormap).
+Neighbor overlay: For each cell, if top1–top5 contain other eNodeBs, draw their colors as thin semi-transparent border halos (e.g. 2–4 px wide, 30% opacity) around the cell edge, stacked by rank. This conveys overlapping coverage without cluttering the interior.
+Base map: Render on top of a lightweight tile basemap (e.g. OpenStreetMap via contextily or folium) so geographic context is visible.
+Implementation: Use scipy.spatial.Voronoi + shapely to clip cells to the bounding box, then render with matplotlib + contextily, or alternatively use folium with GeoJSON polygons for an interactive web map.
