@@ -31,3 +31,58 @@ Legend:
 - Each legend label should show:
   eNodeB ID | valueA: ... | valueB: ...
 - valueA and valueB come from the two numeric columns in the CSV.
+
+
+
+
+
+Data Loading & Preprocessing:
+Load the full JSON without sampling. To avoid slow per-point rendering, do not call ax.scatter() inside the record loop. Instead, collect all point coordinates into per-eNodeB lists first, then batch-render after the loop:
+pythonfrom collections import defaultdict
+
+serving_points = defaultdict(list)        # {enb: [(lon, lat), ...]}
+overlap_rings = defaultdict(lambda: defaultdict(list))  # {enb: {ring_idx: [(lon, lat), ...]}}
+
+for rec in tqdm(records):
+    serving = rec.get("serving", {})
+    s_enb = serving.get("enodeb")
+    if s_enb not in target_set:
+        continue
+    lat = rec.get("latitude")
+    lon = rec.get("longitude")
+    if lat is None or lon is None:
+        continue
+
+    serving_points[s_enb].append((lon, lat))
+
+    overlap_enodebs = []
+    for i in range(1, 6):
+        top = rec.get(f"top_{i}")
+        if top is None:
+            continue
+        t_enb = top.get("enodeb")
+        if t_enb and t_enb in target_set and t_enb != s_enb:
+            overlap_enodebs.append(t_enb)
+
+    for ring_idx, o_enb in enumerate(sorted(set(overlap_enodebs))):
+        overlap_rings[o_enb][ring_idx].append((lon, lat))
+
+# Batch render — one scatter call per eNodeB
+for enb, points in serving_points.items():
+    lons, lats = zip(*points)
+    ax.scatter(lons, lats, c=[enodeb_color_map[enb]], s=30, zorder=3, edgecolors="none")
+
+for o_enb, rings in overlap_rings.items():
+    ring_color = enodeb_color_map[o_enb]
+    for ring_idx, points in rings.items():
+        lons, lats = zip(*points)
+        ring_size = 60 + ring_idx * 30
+        ax.scatter(lons, lats, facecolors="none", edgecolors=[ring_color],
+                   s=ring_size, linewidths=1.0, zorder=2)
+Visualization Requirements:
+
+Color scheme: Assign each unique eNodeB a distinct base color. Within that color, use darker shades for stronger RSRP and lighter shades for weaker RSRP, using LinearSegmentedColormap. Normalize RSRP values per eNodeB.
+Voronoi-based coverage map: Compute a Voronoi diagram from all measurement point coordinates using scipy.spatial.Voronoi + shapely to clip cells to the bounding box. Fill each Voronoi cell with the serving eNodeB's color shaded by RSRP intensity.
+Coverage overlap: For each Voronoi cell, if top_1–top_5 contain other eNodeBs, draw their colors as semi-transparent border halos (2–4px wide, ~30% opacity) around the cell edge, stacked by rank. This conveys overlapping coverage without cluttering the interior.
+Base map: Render on top of an OpenStreetMap tile basemap using contextily.
+
