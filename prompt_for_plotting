@@ -1,0 +1,33 @@
+Write Python code to visualize eNodeB coverage from a JSON file and a CSV file.
+
+JSON file:
+- Each row is one measurement point.
+- It has coordinates, RSRP, serving eNodeB, and top1–top5 visible eNodeBs.
+- top1–top5 may be missing, null, duplicated, or the same as serving.
+
+CSV file:
+- Contains the 20 target eNodeBs I care about.
+- Also contains two numeric columns that should be shown in the legend.
+
+Goal:
+- Only focus on the 20 target eNodeBs from the CSV.
+- If a point's serving eNodeB is not in the target list, skip it.
+- If the serving eNodeB is in the target list, plot it as the main filled scatter point.
+- Color each target eNodeB with a distinct base color.
+- Use darker/lighter shades of that eNodeB color to show serving RSRP strength.
+- Stronger RSRP should be darker, weaker RSRP should be lighter.
+- Normalize RSRP within each serving eNodeB if possible.
+
+Overlap:
+- For each plotted point, check serving + top1–top5.
+- Keep only target eNodeBs.
+- Remove duplicates.
+- If there are other target eNodeBs besides the serving one, show them as thin hollow rings around the same point using their own colors.
+- Do not plot top1–top5 as separate filled dots.
+- If top1–top5 contains the same eNodeB as serving, do not draw an extra ring for it.
+
+Legend:
+- Legend should include only the 20 target eNodeBs from the CSV.
+- Each legend label should show:
+  eNodeB ID | valueA: ... | valueB: ...
+- valueA and valueB come from the two numeric columns in the CSV.
