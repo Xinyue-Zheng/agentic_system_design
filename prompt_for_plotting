@@ -86,3 +86,18 @@ Voronoi-based coverage map: Compute a Voronoi diagram from all measurement point
 Coverage overlap: For each Voronoi cell, if top_1–top_5 contain other eNodeBs, draw their colors as semi-transparent border halos (2–4px wide, ~30% opacity) around the cell edge, stacked by rank. This conveys overlapping coverage without cluttering the interior.
 Base map: Render on top of an OpenStreetMap tile basemap using contextily.
 
+
+from collections import Counter
+
+serving_counts = Counter()
+for rec in records:
+    serving = rec.get("serving", {})
+    s_enb = serving.get("enodeb")
+    if s_enb in target_set:
+        serving_counts[s_enb] += 1
+
+print("Serving point counts per eNodeB:")
+for enb, count in serving_counts.most_common():
+    print(f"  {enb}: {count} points")
+
+
