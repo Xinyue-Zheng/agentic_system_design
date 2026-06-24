@@ -23,7 +23,7 @@ COL_NUM  = "RRCConnUEsNum"
 COL_DEN  = "RRCConnUEsDen"  # not used in current rrc formula
 RRC_DEN_FACTOR = 180.0       # rrc = num / RRC_DEN_FACTOR
 # -----------------------------------------------------------------------------
-
+https://www.openstreetmap.org/export/embed.html?bbox=-74.017848,40.703817,-73.994152,40.721783&layer=mapnik&marker=40.7128,-74.0060
 def fill_gaps_with_zero(df, time_col="DATETIME", enb_col="ENODEB",
                         value_cols=("RRCConnUEsNum", "RRCConnUEsDen"), freq="1h"):
     """For each eNodeB, put it on a regular `freq` grid (its own min..max) and
