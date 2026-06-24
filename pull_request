@@ -1,0 +1,18 @@
+Please help me push my local code to a company GitHub repo and create a Pull Request.
+
+Company repo URL: https://github.com/[company]/[repo-name].git
+Branch name: feature/[date or feature description]
+Commit message: feat: [your change description]
+PR title: [your PR title]
+PR description: [what you did]
+
+Please run these steps in order:
+1. git init (if not already initialized)
+2. git remote add origin https://github.com/[company]/[repo-name].git
+3. git checkout -b feature/[branch name]
+4. git add .
+5. git commit -m "feat: [your change description]"
+6. git push origin feature/[branch name]
+7. Use gh pr create to open a PR targeting the main branch
+
+Confirm each step is successful before moving to the next.
