@@ -1,0 +1,8 @@
+I have a dataset of base station coverage measurements. Each row represents a sampled location with columns: latitude, longitude, and signal_strength (e.g. RSRP in dBm). The sampling points are spaced ~3km apart.
+Please write a Python script to visualize the coverage area:
+
+For each data point, draw a 100m × 100m filled square centered on its coordinate, colored by signal_strength using a colormap (e.g. RdYlGn — red for weak, green for strong).
+Draw an outline/boundary around the overall covered region. To do this, create a 100m × 100m shapely.geometry.box for each point, then use shapely.ops.unary_union to merge them into one (or more) polygons, and plot the boundary as a black outline.
+Optionally, allow filtering by a signal strength threshold so the boundary only shows areas above that threshold.
+Use matplotlib for plotting. Use geopandas if convenient.
+Make sure to handle the coordinate system correctly — if the data is in lat/lon (EPSG:4326), convert to a projected CRS (e.g. UTM) before drawing the 100m squares, then convert back for display.
