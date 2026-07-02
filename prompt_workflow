@@ -145,3 +145,55 @@ Assemble results.md (S1→S6: figure, numbers, decision sentence each).
 EXECUTION ORDER
 
 Phase 0 (schema audit) → S1, S2, S5 for both cases (local files only; no coverage queries) → show me → S3 + S3b on case 1 → I inspect the probe map → S3–S4 on case 2 → S6 both.
+
+
+
+PATCH 2 — standalone plotting script + full-process decision log.
+Do NOT change any search/analysis logic.
+
+(1) NEW SCRIPT, do not modify my originals:
+Create `plot_adaptive_tiles.py` as a standalone module, initially adapted
+from plot_rhea_coverage_overlap.py (read it first, copy its style, coordinate
+handling, and color conventions; import it if convenient but never edit it).
+Requirements:
+- draw_tiles(leaves, color_by, underlay=None, ...): each probe/leaf rendered
+  as a tile whose size = the spacing of its refinement level (3 km at level 0,
+  halving per level), so mixed-size maps render correctly;
+- color_by supports: label / priority / assigned_backup / agreement;
+- optional population underlay via plot_rhea_population_density.py;
+- every S3/S4 figure in PATCH 1 must be produced through this script, so all
+  maps are consistent and reusable for the other cases later.
+
+(2) FULL-PROCESS DECISION LOG (my advisor requires the process NOT be
+simplified — every judgment must be visible and auditable):
+
+(2a) Per-step records. Each step's S{n}_numbers.json gains four fields:
+  "examined": what data was loaded and what was computed,
+  "compared": the explicit comparison made, with BOTH sides evaluated
+              (e.g. "SDR = 3.4 vs threshold 1.0"),
+  "decided":  the branch taken,
+  "because":  one sentence linking compared → decided.
+results.md renders these as a table under each figure — never just the
+conclusion sentence alone.
+
+(2b) S3 refinement audit trail — one row PER refinement round in
+`S3_refinement_log.csv`:
+  round, cell_id, level, spacing_m, pop, D_disagree, M_margin, U, priority,
+  corner_labels_before, n_new_probes, new_probe_labels,
+  children_created, children_closed_immediately,
+  cumulative_deployment_queries, action(refine|close|skip_cached),
+  stop_check(budget_left, priority_vs_epsilon)
+This CSV is the "no simplification" evidence: every single zoom-in decision
+the heuristic made, with the numbers that drove it. results.md embeds a
+digest: first 5 rounds verbatim (as a table), then per-level summaries
+(rounds, queries, cells closed), then the final stop reason with both sides
+of the stopping inequality printed.
+
+(2c) S4 routing audit: `S4_routing_log.csv`, one row per covered/marginal
+leaf: leaf_id, level, pop_weight, demand_rrc, demand_vol, assigned_backup
+eNodeB, backup_rsrp, neighbor_headroom_before, headroom_after,
+overflow_to_R_capacity. results.md embeds the top-10 largest-demand rows.
+
+(2d) Append a final section "Decision chain" to results.md: the six
+(examined → compared → decided) triplets in sequence, S1→S6, so the whole
+analysis reads end-to-end without opening any other file.
