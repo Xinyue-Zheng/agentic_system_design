@@ -1,6 +1,6 @@
 GOAL
 
-Build a small Python pipeline analyzing 2 (of 10) historical full-eNodeB outage cases (rural, 8+ h). Question answered per case: could the outage traffic be absorbed by neighbors, and roughly how many connections were interrupted. Exactly 6 steps; every step outputs (1) one figure, (2) headline number(s), (3) one printed decision sentence explaining why we proceed to the next step — all assembled into results.md per case so the analysis reads as a chain of evidence. Keep code simple: plain scripts, no framework.
+Build a small Python pipeline analyzing 2 (of 10) historical full-eNodeB outage cases (rural, 8+ h). Question answered per case: could the outage traffic be absorbed by neighbors, and roughly how many connections were interrupted. Exactly 6 steps; every step outputs (1) one figure, (2) headline number(s), (3) one printed decision sentence explaining why we proceed to the next step — all assembled into results.md per case so the analysis reads as a chain of evidence.
 
 DATA LAYOUT (real paths — do not invent anything outside this)
 
