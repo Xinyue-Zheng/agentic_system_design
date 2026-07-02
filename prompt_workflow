@@ -1,0 +1,147 @@
+GOAL
+
+Build a small Python pipeline analyzing 2 (of 10) historical full-eNodeB outage cases (rural, 8+ h). Question answered per case: could the outage traffic be absorbed by neighbors, and roughly how many connections were interrupted. Exactly 6 steps; every step outputs (1) one figure, (2) headline number(s), (3) one printed decision sentence explaining why we proceed to the next step — all assembled into results.md per case so the analysis reads as a chain of evidence. Keep code simple: plain scripts, no framework.
+
+DATA LAYOUT (real paths — do not invent anything outside this)
+
+Root: {{ABS_PATH_TO_PROJECT_ROOT}}
+
+more_complicate_cases/
+├── enodeb_neighbors_time/{target_enodeb}.csv
+│     One CSV per case, filename = target eNodeB id.
+│     Contains: start_time, end_time (the outage window), and the 20 nearest
+│     neighbor eNodeB ids. (Exact column names: verify in Phase 0.)
+├── PRB/  (10 CSVs, one per case)
+│     PRB utilization for target + 20 neighbors, from 1 month before outage
+│     until outage end. NaN must be filled with 0.
+├── throughput_volume/  (10 CSVs, same shape as PRB/)
+│     Throughput and volume for target + neighbors, same time span.
+├── rhea_aggregated/  (10 JSONs, named *_aggregated.json, one per case)
+│     Pre-downloaded coverage snapshots sampled every 3 km: per coordinate,
+│     serving cell + RSRP + top1..top5 backup cells + RSRPs.
+│     Field names and the cell-name → eNodeB-id mapping are NOT documented
+│     anywhere: in Phase 0, open one sample file, print its structure, and
+│     document both (confirm with me only if the mapping is ambiguous).
+│     These are the INITIAL PROBES for S3. IMPORTANT: pre-downloaded does NOT
+│     mean free — see COST ACCOUNTING below.
+├── rhea_aggregated_finer/  (JSONs at 1 km sampling)
+│     Downloaded only for manual inspection. In this pipeline it is used as a
+│     VALIDATION REFERENCE for the heuristic search (S3b). It must NEVER be
+│     read by the search itself — that would be cheating.
+└── RRC_samples/{target_enodeb}/
+      ├── *_coincident_increase_analysis.csv
+      │     column `classification`: rows with value "coincident_increase"
+      │     are the eNodeBs whose RRC jumped at outage onset = ground-truth
+      │     absorbers.
+      └── rrc_decomposition_summary_wholewindow_*.csv
+            per-neighbor distance to target, and column `trend_residual` =
+            RRC rise/fall (time-decomposition based) for one chosen hour,
+            for every eNodeB incl. the target.
+
+RRC_data/  (sibling of more_complicate_cases)
+└── kpi_{target_enodeb}.csv     raw RRC series for the target AND all 20 neighbors (confirmed)
+
+usa_pd_2019_1km.tif             population density raster (USA, 1 km, 2019)
+query_rhea_aggregation.py       my script that performs real coverage queries
+build_cube_weights.py           my existing reader for the population raster
+
+Output: OUT = {{output folder}} → OUT/{case}/S{n}_{name}.png + S{n}_numbers.json + one OUT/{case}/results.md; shared OUT/cache/ and OUT/cache/query_ledger.csv.
+
+COST ACCOUNTING (this replaces the old "cache = free" rule)
+
+The 10 pre-downloaded rhea_aggregated files exist only because I fetched them manually; in deployment (an 11th, unseen case) every one of those points is a paid query. Therefore the ledger records TWO columns per query: served_from = {cache|api} and deployment_cost = 1 for every point the algorithm consumes (initial grid included). Pruning ratio and all reported query counts use deployment_cost, not api calls. New refinement queries in S3 go through query_rhea_aggregation.py (respect its rate/latency), are cached to OUT/cache/coverage.parquet keyed by (lat, lon), and are never repeated.
+
+PHASE 0 — SCHEMA AUDIT (before any pipeline code)
+
+Load one sample of each file type, print columns/dtypes/timezones. Rely on the RESOLVED FACTS below as authoritative; complete every SELF-DISCOVERY item by reading the files/scripts yourself. Only come back to me if something contradicts a resolved fact. Do not proceed on guesses.
+
+RESOLVED FACTS (from the user — authoritative):
+
+
+RRC series are available for the target AND all 20 neighbors under RRC_data/ (kpi_{enodeb_id}.csv naming). Verify the exact layout in Phase 0 by listing the directory (one file per eNodeB vs one file containing all), plus granularity, timezone, and pre-outage history length (≥3 weeks needed for baselines).
+trend_residual was computed for the SECOND hour after outage onset ("hour 2"). This conveniently skips the hour-1 reconnection transient — state this in the report as a design justification. Sign convention: verify with a built-in sanity check — the TARGET's own trend_residual must be strongly NEGATIVE (it lost its traffic); if it comes out positive, flip your interpretation and log that you did.
+
+
+SELF-DISCOVERY (do not ask the user; read the files):
+
+
+rhea_aggregated JSON field names (coordinates, serving cell, RSRP, backups) and the cell-name → eNodeB-id mapping rule: open one JSON, infer both, print the inferred mapping rule in the Phase 0 audit for confirmation.
+query_rhea_aggregation.py invocation (single-point signature, batch support, throttling): read the script itself and summarize in the Phase 0 audit; respect any rate limits found.
+
+
+THE 6 STEPS (run per case; start with the 2 cases I name)
+
+S1 — Demand baseline
+
+From RRC_data and throughput_volume: baseline = prior 3–4 weeks (bounded by available history), same hour-of-day + day-of-week, median + [P25, P75], aggregated over the outage window read from enodeb_neighbors_time/{target}.csv. Fit rho = PRB/volume from PRB/ + throughput_volume/ history (robust median ratio, NaN→0 first).
+
+
+Figure: target RRC series + baseline band, outage window shaded.
+Numbers: D_rrc [lo,hi], D_vol [lo,hi], rho, AND D_rrc_h2 [lo,hi] = the baseline RRC for the single hour that is outage_start + 2h (same weekday/hour matching). D_rrc_h2 exists because trend_residual (used in S5) is an hour-2 quantity — the conservation identity must compare like with like.
+Decision: "Demand at risk ≈ {D_rrc} connections → non-trivial; next check neighbor capacity."
+
+
+S2 — Neighbors and headroom
+
+Neighbor list from enodeb_neighbors_time; distances from the decomposition summary CSV. Per-neighbor PRB baseline (same method as S1, NaN→0). headroom = 0.70 − PRB_baseline (floor 0); absorbable volume = Σ headroom/rho; SDR = absorbable/D_vol.
+
+
+Figure: scatter distance vs headroom, point size = neighbor volume.
+Number: SDR.
+Decision: "SDR = {x} → capacity {is not | is} the binding constraint; capacity cannot tell us about coverage reach → run the spatial search."
+
+
+S3 — Heuristic coverage search (core; budget B = 1200 deployment-cost queries)
+
+Initial probes = ALL points in this case's rhea_aggregated JSON (*_aggregated.json) (their deployment cost is charged to the ledger). Label each probe: serving eNodeB ≠ target → unaffected; else by top1 backup RSRP: ≥ −105 dBm covered; [−110, −105) marginal; else hole. Cells = squares of 4 adjacent probes (3 km spacing initially). Uncertainty U = (spacing/3000) × min(1, 0.6·D + 0.4·M); D = normalized corner-label entropy + 0.5·[corner top1 backup eNodeBs differ], clipped to 1; M = exp(−|median corner RSRP − (−105)|/4). Priority = Pop × Area × U, Pop sampled from usa_pd_2019_1km.tif via the reader in build_cube_weights.py. Loop: heap-pop max cell → add 5 probes (edge midpoints + center; cache first, then real query via query_rhea_aggregation.py) → split into 4 half-spacing children → recompute → stop at budget / priority < 1e-3·initial max / spacing = 100 m.
+
+
+Figure: adaptive probe map (probes colored by label, denser where refined, population underlay).
+Numbers: deployment-cost queries used; pruning ratio vs exhaustive 100 m grid over the same extent; P_hole = population-weighted hole share.
+Decision: "Boundary localized with {q} deployment-equivalent queries ({r}% of exhaustive); {P_hole}% of population in holes → convert map to demand routing."
+
+
+S3b — Search validation against the 1 km reference
+
+For every final leaf cell that overlaps points in rhea_aggregated_finer, compare the heuristic's label against labels computed from the 1 km data (same RSRP rules).
+
+
+Figure: agreement map (agree / disagree cells).
+Number: agreement rate, overall and within former boundary-band cells.
+Decision: "Heuristic labels agree with the 1 km reference on {a}% of comparable cells → the budgeted search did not distort the qualitative picture."
+
+
+S4 — Absorption prediction
+
+Distribute D_rrc/D_vol over covered+marginal leaves by population weight; assign each leaf to its top1 backup eNodeB; per neighbor dPRB = rho × assigned volume (×1.4 for marginal leaves); demand beyond headroom → R_capacity; hole demand → R_hole; rest → R_absorbed.
+
+
+Figure: stacked bar R_hole/R_capacity/R_absorbed + predicted per-neighbor shares.
+Number: predicted interrupted = R_hole + R_capacity [lo,hi].
+Decision: "Model predicts {lo}–{hi} interrupted, bottleneck {…} → confront with ground truth."
+
+
+S5 — Conservation check using my ground-truth files (evaluated at outage hour 2)
+
+Absorber set = rows with classification == "coincident_increase" in the coincident-increase CSV. Absorbed_h2 = Σ trend_residual over that set (sign convention per RESOLVED FACT 2: run the target-negative sanity check first). Conservation at matching granularity: Lost_rrc_h2 = D_rrc_h2 − Absorbed_h2. Then extrapolate to the whole window for the headline: absorbed_fraction = Absorbed_h2 / D_rrc_h2; Lost_rrc_window ≈ (1 − absorbed_fraction) × D_rrc — label it clearly as an hour-2-based extrapolation. Cross-check (mandatory — data confirmed available): recompute the absorber set and Absorbed with a P90-significance rule on the neighbors' raw RRC from kpi_{target}.csv over the full window (excluding hour 1) and report both.
+
+
+Figure: waterfall in hour-2 terms — D_rrc_h2 minus each ground-truth absorber's trend_residual, remainder = Lost_h2.
+Numbers: Lost_rrc_h2 [lo,hi]; Lost_rrc_window [lo,hi] (extrapolated); number of ground-truth absorbers; predicted-vs-actual overlap: how many of S4's top-3 predicted absorbers are in the coincident_increase set.
+Decision: "Observed hour-2 loss {lo}–{hi} (window-extrapolated {lo}–{hi}) vs predicted {lo}–{hi}; {k}/3 of predicted top absorbers confirmed → {consistent | mismatch, note attribution}."
+
+
+S6 — One-page conclusion card
+
+Grade: A (no hole, no saturation, Lost≈0) / B (capacity-driven) / C (hole-driven) / D (both).
+
+
+Figure: hole map + population overlay (reuse S3 final map, holes emphasized).
+Numbers: grade + Lost interval.
+Final sentence: "Case {id}: grade {G}. Estimated {lo}–{hi} connections interrupted, concentrated in {area}; bottleneck: {…}; {k}/3 predicted absorbers confirmed by ground truth; search validated at {a}% agreement vs 1 km reference."
+Assemble results.md (S1→S6: figure, numbers, decision sentence each).
+
+
+EXECUTION ORDER
+
+Phase 0 (schema audit) → S1, S2, S5 for both cases (local files only; no coverage queries) → show me → S3 + S3b on case 1 → I inspect the probe map → S3–S4 on case 2 → S6 both.
