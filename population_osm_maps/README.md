@@ -9,10 +9,13 @@ is fetched directly (tile server for the basemap, Overpass API for vector featur
 ## Dependencies
 
 ```
-rasterio   numpy   matplotlib   requests   Pillow
+rasterio   numpy   matplotlib   Pillow      # both scripts
+requests                                    # only pop_osm_map.py
 ```
 
-Install with:
+`countryside_map.py` fetches every URL (OSM tiles + Overpass) with the standard
+library `urllib.request` — it needs no third-party HTTP client. `pop_osm_map.py`
+still uses `requests`. Install everything with:
 
 ```bash
 pip install -r requirements.txt

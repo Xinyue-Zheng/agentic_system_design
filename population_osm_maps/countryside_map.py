@@ -16,14 +16,17 @@ Valley (Monterey County) and writes TWO figures:
 Everything is drawn in Web Mercator (EPSG:3857) so the overlays line up exactly
 with the OSM tiles (which are natively Mercator).
 
-Needs only: rasterio, numpy, matplotlib, requests, Pillow.
+Needs only: rasterio, numpy, matplotlib, Pillow (URLs fetched via stdlib urllib).
 """
 
 from __future__ import annotations
 
 import io
+import json
 import math
 import sys
+import urllib.parse
+import urllib.request
 from collections import deque
 
 import matplotlib
@@ -32,7 +35,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
-import requests
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.patches import Circle, Patch, Rectangle
 from matplotlib.patches import Polygon as MplPolygon
@@ -69,9 +71,22 @@ OSM_LAYERS = {
 _KM_PER_DEG_LAT = 111.32
 _R = 6378137.0          # Web Mercator sphere radius (m)
 USER_AGENT = "countryside_map/1.0 (population + OSM feature mapping demo)"
+_HEADERS = {"User-Agent": USER_AGENT}  # OSM tile server / Overpass reject requests without one
 
-HTTP = requests.Session()
-HTTP.headers.update({"User-Agent": USER_AGENT})
+
+def http_get(url, timeout=30):
+    """GET a URL with urllib and return the raw response bytes."""
+    req = urllib.request.Request(url, headers=_HEADERS, method="GET")
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read()
+
+
+def http_post_form(url, form, timeout=60):
+    """POST a form-encoded body with urllib and return the raw response bytes."""
+    body = urllib.parse.urlencode(form).encode("utf-8")
+    req = urllib.request.Request(url, data=body, headers=_HEADERS, method="POST")
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read()
 
 LANDUSE_COLORS = {
     "farmland": "#f3e4b0", "farmyard": "#e8d5a0", "vineyard": "#d7a8d7",
@@ -153,9 +168,8 @@ def fetch_osm_basemap(west, south, east, north, zoom):
             sub = subdomains[(tx + ty) % 3]
             url = f"https://{sub}.tile.openstreetmap.org/{zoom}/{tx}/{ty}.png"
             try:
-                r = HTTP.get(url, timeout=30)
-                r.raise_for_status()
-                tile = Image.open(io.BytesIO(r.content)).convert("RGB")
+                content = http_get(url, timeout=30)
+                tile = Image.open(io.BytesIO(content)).convert("RGB")
                 canvas.paste(tile, ((tx - tx0) * 256, (ty - ty0) * 256))
             except Exception as exc:  # noqa: BLE001 - leave gray tile on failure
                 print(f"  tile {zoom}/{tx}/{ty} failed: {exc}", file=sys.stderr)
@@ -296,9 +310,8 @@ def fetch_osm_features(west, south, east, north, want, timeout=120):
     for url in endpoints:
         try:
             print(f"querying Overpass ({url}) ...")
-            r = HTTP.post(url, data={"data": query}, timeout=timeout + 30)
-            r.raise_for_status()
-            data = r.json()
+            payload = http_post_form(url, {"data": query}, timeout=timeout + 30)
+            data = json.loads(payload)
             break
         except Exception as exc:  # noqa: BLE001
             print(f"overpass {url} failed: {exc}", file=sys.stderr)
