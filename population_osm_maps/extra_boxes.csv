@@ -1,0 +1,4 @@
+label,contains,lat_min,lat_max,lon_min,lon_max
+TOP,amenity + highway + railway,36.417893,36.456287,-121.368897,-121.218086
+BOTTOM-LEFT,highway,36.257493,36.278795,-121.420685,-121.329374
+BOTTOM-RIGHT,amenity + highway + railway,36.188463,36.278747,-121.154266,-121.109334
