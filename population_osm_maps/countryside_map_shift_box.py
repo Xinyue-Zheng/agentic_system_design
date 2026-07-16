@@ -1,26 +1,29 @@
 #!/usr/bin/env python3
-"""Countryside maps + hand-picked highway boxes near the middle settlement.
+"""Countryside maps (no basemap) + a ring of same-size boxes OUTSIDE the
+middle settlement.
 
 Identical to countryside_map.py (same population clustering, same OSM feature
-fetching, same amenity+residential settlement-box clustering/merging) except
-figure 2 adds one extra piece: a handful of fixed lat/lon boxes (see
-HAND_SKETCH_BOXES) around the settlement box that contains the configured
-center point (Greenfield) -- these coordinates were read directly off a
-hand-drawn sketch the user marked up on an earlier render of this map, not
-derived from any clustering algorithm. Each box is drawn on the map with its
-lat/lon range annotated directly on it (to 4 decimal places on the map, 6 in
-the console log) and whatever highway/railway it contains noted.
+fetching, same amenity+residential settlement-box clustering/merging) except:
+  - no OSM tile basemap is fetched or drawn -- figures are plotted on a plain
+    background with a lat/lon grid instead of real map imagery;
+  - figure 2 adds one extra piece: 8 boxes (RING_CELL_KM deep, one per compass
+    direction) sitting directly against the settlement box's own edges -- N/S
+    boxes span its full width, E/W boxes span its full height, the 4 corner
+    boxes fill the gaps at its corners -- so the ring tiles cleanly around the
+    town with no gaps or overlap and never sits *inside* the town itself. Each
+    box is drawn on the map with a short compass-direction label; its full
+    lat/lon range and whatever highway/railway it contains are written to a
+    CSV file.
 
 Runs directly with NO command-line arguments -- everything is hardcoded below.
-To adjust a box, edit HAND_SKETCH_BOXES directly.
+Change RING_CELL_KM to resize the ring.
 
-Needs only: rasterio, numpy, matplotlib, Pillow (URLs fetched via stdlib urllib).
+Needs only: rasterio, numpy, matplotlib (URLs fetched via stdlib urllib).
 """
 
 from __future__ import annotations
 
 import csv
-import io
 import json
 import math
 import sys
@@ -37,7 +40,6 @@ import rasterio
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.patches import Circle, Patch, Rectangle
 from matplotlib.patches import Polygon as MplPolygon
-from PIL import Image
 from rasterio.windows import from_bounds
 
 # ----------------------------------------------------------------------------
@@ -47,7 +49,6 @@ TIF_PATH = "usa_pd_2018_1km.tif"
 CENTER_LAT = 36.31769
 CENTER_LON = -121.24962
 BOX_KM = 30.0            # full width/height of the (square) window in km
-ZOOM = 12               # OSM tile zoom level
 DENSE_FLOOR = 50.0      # a cell counts as "populated" at >= this many persons/km^2
 MIN_CLUSTER_CELLS = 2   # ignore population blobs smaller than this many cells
 
@@ -66,7 +67,7 @@ MERGE_BUFFER_DEG = 0.005     # after clustering amenity POIs and residential par
 
 OUT_POP = "pop_density_map_boxshift.png"
 OUT_OSM = "osm_features_map_boxshift.png"
-OUT_BOX_CSV = "hand_sketch_boxes.csv"
+OUT_BOX_CSV = "ring_boxes.csv"
 
 # which OSM feature layers to draw on figure 2
 OSM_LAYERS = {
@@ -84,13 +85,6 @@ USER_AGENT = "countryside_map/1.0 (population + OSM feature mapping demo)"
 _HEADERS = {"User-Agent": USER_AGENT}  # OSM tile server / Overpass reject requests without one
 
 
-def http_get(url, timeout=30):
-    """GET a URL with urllib and return the raw response bytes."""
-    req = urllib.request.Request(url, headers=_HEADERS, method="GET")
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return resp.read()
-
-
 def http_post_form(url, form, timeout=60):
     """POST a form-encoded body with urllib and return the raw response bytes."""
     body = urllib.parse.urlencode(form).encode("utf-8")
@@ -99,11 +93,11 @@ def http_post_form(url, form, timeout=60):
         return resp.read()
 
 LANDUSE_COLORS = {
-    "farmland": "#f3e4b0", "farmyard": "#e8d5a0", "vineyard": "#d7a8d7",
-    "orchard": "#c6df9a", "residential": "#dcd2c6", "commercial": "#e6c6c6",
-    "retail": "#e6afaf", "industrial": "#cdbdd6", "forest": "#a6cf96",
-    "meadow": "#cbe69f", "grass": "#cbe69f", "cemetery": "#b3c49f",
-    "recreation_ground": "#c2df9f", "quarry": "#c6bfb0",
+    "farmland": "#ffd700", "farmyard": "#FF8C00", "vineyard": "#8A2BE2",
+    "orchard": "#001000", "residential": "#1E90FF", "commercial": "#DC143C",
+    "retail": "#FF1493", "industrial": "#708090", "forest": "#006400",
+    "meadow": "#7FFF00", "grass": "#32CD32", "cemetery": "#4B0082",
+    "recreation_ground": "#00CED1", "quarry": "#8B4513",
 }
 LANDUSE_DEFAULT = "#d9d9d9"
 LEISURE_COLORS = {
@@ -156,50 +150,6 @@ def bbox_from_center(lat, lon, box_km):
 # ----------------------------------------------------------------------------
 # OSM tile basemap
 # ----------------------------------------------------------------------------
-def _deg2num(lat, lon, n):
-    x = (lon + 180.0) / 360.0 * n
-    lat_r = math.radians(lat)
-    y = (1.0 - math.asinh(math.tan(lat_r)) / math.pi) / 2.0 * n
-    return x, y
-
-
-def _num2lat(y, n):
-    return math.degrees(math.atan(math.sinh(math.pi * (1.0 - 2.0 * y / n))))
-
-
-def fetch_osm_basemap(west, south, east, north, zoom):
-    """Download & stitch OSM tiles. Returns (image_array, mercator_extent)."""
-    n = 2 ** zoom
-    x_tl, y_tl = _deg2num(north, west, n)
-    x_br, y_br = _deg2num(south, east, n)
-    tx0, tx1 = int(math.floor(x_tl)), int(math.floor(x_br))
-    ty0, ty1 = int(math.floor(y_tl)), int(math.floor(y_br))
-
-    n_tiles = (tx1 - tx0 + 1) * (ty1 - ty0 + 1)
-    print(f"fetching {n_tiles} OSM tiles at zoom {zoom} ...")
-
-    canvas = Image.new("RGB", ((tx1 - tx0 + 1) * 256, (ty1 - ty0 + 1) * 256), (221, 221, 221))
-    subdomains = ["a", "b", "c"]
-    for tx in range(tx0, tx1 + 1):
-        for ty in range(ty0, ty1 + 1):
-            sub = subdomains[(tx + ty) % 3]
-            url = f"https://{sub}.tile.openstreetmap.org/{zoom}/{tx}/{ty}.png"
-            try:
-                content = http_get(url, timeout=30)
-                tile = Image.open(io.BytesIO(content)).convert("RGB")
-                canvas.paste(tile, ((tx - tx0) * 256, (ty - ty0) * 256))
-            except Exception as exc:  # noqa: BLE001 - leave gray tile on failure
-                print(f"  tile {zoom}/{tx}/{ty} failed: {exc}", file=sys.stderr)
-
-    lon_left = tx0 / n * 360.0 - 180.0
-    lon_right = (tx1 + 1) / n * 360.0 - 180.0
-    lat_top = _num2lat(ty0, n)
-    lat_bot = _num2lat(ty1 + 1, n)
-    x_left, y_top = merc(lon_left, lat_top)
-    x_right, y_bot = merc(lon_right, lat_bot)
-    return np.asarray(canvas), (x_left, x_right, y_bot, y_top)
-
-
 # ----------------------------------------------------------------------------
 # Population density
 # ----------------------------------------------------------------------------
@@ -323,25 +273,48 @@ def merge_close_boxes(boxes, buf):
 
 
 # ----------------------------------------------------------------------------
-# Hand-picked boxes around the middle settlement: fixed lat/lon rectangles
-# read off the user's own sketch (drawn on an earlier render of this map),
-# not derived from any clustering algorithm. Edit these directly to nudge a
-# box's position/size.
+# Ring of CELL_KM-deep boxes OUTSIDE the middle settlement's own box: 8 boxes
+# sitting directly against the settlement box's own edges (N/S span its full
+# width, E/W span its full height, the 4 corner boxes fill the gaps at its
+# corners) so the ring tiles cleanly with no gaps or overlap and never sits
+# *inside* the town itself.
 # ----------------------------------------------------------------------------
-HAND_SKETCH_BOXES = [
-    # nudged outward from the original sketch reading (below) so none of them
-    # overlap the settlement box (cluster #3, lat[36.3063,36.3420]
-    # lon[-121.2658,-121.2248]) or each other -- same sizes, just shifted:
-    #   N: lat[36.350,36.376] lon[-121.278,-121.255]  (unchanged, already clear)
-    #   W: lat[36.286,36.342] lon[-121.312,-121.266]  (lon +-0.005 west)
-    #   E: lat[36.325,36.347] lon[-121.225,-121.206]  (lon +0.005 east)
-    #   S: lat[36.279,36.306] lon[-121.262,-121.201]  (lat -0.005 south)
-    {"label": "N", "lat_min": 36.352, "lat_max": 36.378, "lon_min": -121.278, "lon_max": -121.255},
-    {"label": "W", "lat_min": 36.286, "lat_max": 36.342, "lon_min": -121.317, "lon_max": -121.271},
-    {"label": "E", "lat_min": 36.325, "lat_max": 36.347, "lon_min": -121.220, "lon_max": -121.201},
-    # S nudged left to sit flush against W's right edge (lon -121.271), same width
-    {"label": "S", "lat_min": 36.274, "lat_max": 36.301, "lon_min": -121.271, "lon_max": -121.210},
-]
+RING_CELL_KM = 3.0  # how far outward each ring box reaches
+RING_DIRECTIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+
+
+def km_to_deg(km, ref_lat):
+    """Real-world km -> (d_lon_deg, d_lat_deg) offsets at a given latitude."""
+    d_lat = km / _KM_PER_DEG_LAT
+    d_lon = km / (_KM_PER_DEG_LAT * max(math.cos(math.radians(ref_lat)), 1e-6))
+    return d_lon, d_lat
+
+
+def ring_cell_bounds(mlo_lon, mhi_lon, mlo_lat, mhi_lat, direction, cell_km, ref_lat):
+    """Bounds of a cell sitting just OUTSIDE the settlement box, in the given
+    compass direction. N/S cells span the box's full width and extend outward
+    by cell_km; E/W cells span its full height; the corner cells (NE/NW/SE/SW)
+    are cell_km x cell_km squares filling the corner gaps. Plain degrees-per-km
+    conversion (corrected for latitude), no Mercator round-trip.
+    """
+    d_lon, d_lat = km_to_deg(cell_km, ref_lat)
+    if direction == "N":
+        return mlo_lon, mhi_lon, mhi_lat, mhi_lat + d_lat
+    if direction == "S":
+        return mlo_lon, mhi_lon, mlo_lat - d_lat, mlo_lat
+    if direction == "E":
+        return mhi_lon, mhi_lon + d_lon, mlo_lat, mhi_lat
+    if direction == "W":
+        return mlo_lon - d_lon, mlo_lon, mlo_lat, mhi_lat
+    if direction == "NE":
+        return mhi_lon, mhi_lon + d_lon, mhi_lat, mhi_lat + d_lat
+    if direction == "NW":
+        return mlo_lon - d_lon, mlo_lon, mhi_lat, mhi_lat + d_lat
+    if direction == "SE":
+        return mhi_lon, mhi_lon + d_lon, mlo_lat - d_lat, mlo_lat
+    if direction == "SW":
+        return mlo_lon - d_lon, mlo_lon, mlo_lat - d_lat, mlo_lat
+    raise ValueError(direction)
 
 
 def box_road_rail_kinds(feats, lo_lon, hi_lon, lo_lat, hi_lat):
@@ -447,9 +420,12 @@ def add_polygons(ax, items, color_of, zorder, alpha, edgecolor="none", lw=0.0):
                                       alpha=alpha, zorder=zorder))
 
 
-def setup_axes(ax, base_img, base_extent, west, south, east, north, title):
-    ax.imshow(base_img, extent=base_extent, origin="upper", interpolation="bilinear",
-              zorder=0)
+CANVAS_FACECOLOR = "#f4f4f0"  # plain background color (no basemap tiles)
+
+
+def setup_axes(ax, west, south, east, north, title):
+    """Plain canvas: no tile image, just a flat background + lat/lon grid."""
+    ax.set_facecolor(CANVAS_FACECOLOR)
     xw, yb = merc(west, south)
     xe, yt = merc(east, north)
     ax.set_xlim(xw, xe)
@@ -460,6 +436,7 @@ def setup_axes(ax, base_img, base_extent, west, south, east, north, title):
     ax.set_xticklabels([f"{v:.3f}" for v in lon_ticks])
     ax.set_yticks([merc(CENTER_LON, v)[1] for v in lat_ticks])
     ax.set_yticklabels([f"{v:.3f}" for v in lat_ticks])
+    ax.grid(True, color="white", linewidth=0.8, alpha=0.9, zorder=0.5)
     ax.set_xlabel("longitude")
     ax.set_ylabel("latitude")
     ax.set_title(title)
@@ -467,7 +444,7 @@ def setup_axes(ax, base_img, base_extent, west, south, east, north, title):
 
 
 def add_attribution(ax):
-    ax.text(0.005, 0.005, "(c) OpenStreetMap contributors", transform=ax.transAxes,
+    ax.text(0.005, 0.005, "data (c) OpenStreetMap contributors", transform=ax.transAxes,
             fontsize=7, color="black", alpha=0.7, ha="left", va="bottom",
             bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.6))
 
@@ -475,8 +452,7 @@ def add_attribution(ax):
 # ----------------------------------------------------------------------------
 # Figure 1: population density
 # ----------------------------------------------------------------------------
-def figure_population(base_img, base_extent, west, south, east, north,
-                      data, transform):
+def figure_population(west, south, east, north, data, transform):
     lon2d, lat2d = cell_centers(data, transform)
     valid = data[np.isfinite(data)]
     thresh = max(np.nanpercentile(valid, 90), DENSE_FLOOR)
@@ -486,8 +462,8 @@ def figure_population(base_img, base_extent, west, south, east, north,
           f"{len(blobs)} cluster(s):")
 
     fig, ax = plt.subplots(figsize=(12, 12))
-    _, yb, _, yt = setup_axes(ax, base_img, base_extent, west, south, east, north,
-                              f"Population density on OSM basemap\n"
+    _, yb, _, yt = setup_axes(ax, west, south, east, north,
+                              f"Population density (no basemap)\n"
                               f"center ({CENTER_LAT}, {CENTER_LON}), "
                               f"{BOX_KM:.0f} km x {BOX_KM:.0f} km  (Salinas Valley, CA)")
 
@@ -497,7 +473,7 @@ def figure_population(base_img, base_extent, west, south, east, north,
     norm = matplotlib.colors.SymLogNorm(linthresh=1.0, vmin=0.0, vmax=vmax)
     cmap = plt.get_cmap("turbo").copy()
     cmap.set_bad(alpha=0.0)
-    mesh = ax.pcolormesh(Xe, Ye, masked, cmap=cmap, norm=norm, alpha=0.6,
+    mesh = ax.pcolormesh(Xe, Ye, masked, cmap=cmap, norm=norm, alpha=0.85,
                          shading="flat", zorder=2)
     cbar = fig.colorbar(mesh, ax=ax, shrink=0.72, pad=0.02)
     cbar.set_label("population density (persons / km$^2$, log scale)")
@@ -543,12 +519,12 @@ def figure_population(base_img, base_extent, west, south, east, north,
 # ----------------------------------------------------------------------------
 # Figure 2: OSM interest features + shifted-box overlay
 # ----------------------------------------------------------------------------
-def figure_osm(base_img, base_extent, west, south, east, north, feats):
+def figure_osm(west, south, east, north, feats):
     print("\n[figure 2] OSM features:  " +
           "  ".join(f"{k}={len(v)}" for k, v in feats.items()))
     fig, ax = plt.subplots(figsize=(13, 12))
-    _, yb, _, yt = setup_axes(ax, base_img, base_extent, west, south, east, north,
-                              f"OSM interest features on OSM basemap\n"
+    _, yb, _, yt = setup_axes(ax, west, south, east, north,
+                              f"OSM interest features (no basemap)\n"
                               f"center ({CENTER_LAT}, {CENTER_LON}), "
                               f"{BOX_KM:.0f} km x {BOX_KM:.0f} km  (Salinas Valley, CA)")
     handles = []
@@ -556,7 +532,7 @@ def figure_osm(base_img, base_extent, west, south, east, north, feats):
     if OSM_LAYERS["landuse"] and feats["landuse"]:
         add_polygons(ax, feats["landuse"],
                      lambda v: LANDUSE_COLORS.get(v, LANDUSE_DEFAULT),
-                     zorder=1, alpha=0.4)
+                     zorder=1, alpha=0.6)
         counts = {}
         for _, v in feats["landuse"]:
             counts[v] = counts.get(v, 0) + 1
@@ -674,44 +650,49 @@ def figure_osm(base_img, base_extent, west, south, east, north, feats):
         mid_box = (nearest["lo_lon"] - pad, nearest["hi_lon"] + pad,
                   nearest["lo_lat"] - pad, nearest["hi_lat"] + pad)
 
-    # --- hand-picked boxes (HAND_SKETCH_BOXES): drawn with just a short
-    # label on the map; full lat/lon range goes to a CSV file instead ---
-    print("\n  hand-picked boxes:")
-    shift_handle_added = False
-    csv_rows = []
-    for b in HAND_SKETCH_BOXES:
-        lo_lon, hi_lon, lo_lat, hi_lat = b["lon_min"], b["lon_max"], b["lat_min"], b["lat_max"]
-        kinds = box_road_rail_kinds(feats, lo_lon, hi_lon, lo_lat, hi_lat)
-        kind_str = " + ".join(sorted(kinds)) if kinds else "none"
+    # --- ring of RING_CELL_KM boxes OUTSIDE the settlement, one per compass
+    # direction, drawn with a short label on the map; full lat/lon range goes
+    # to a CSV file ---
+    if mid_box is not None:
+        mlo_lon, mhi_lon, mlo_lat, mhi_lat = mid_box
+        print(f"\n  {RING_CELL_KM:.0f} km ring outside the middle settlement (8 boxes):")
+        shift_handle_added = False
+        csv_rows = []
+        for direction in RING_DIRECTIONS:
+            lo_lon, hi_lon, lo_lat, hi_lat = ring_cell_bounds(
+                mlo_lon, mhi_lon, mlo_lat, mhi_lat, direction, RING_CELL_KM, CENTER_LAT)
+            kinds = box_road_rail_kinds(feats, lo_lon, hi_lon, lo_lat, hi_lat)
+            kind_str = " + ".join(sorted(kinds)) if kinds else "none"
 
-        sx0, sy0 = merc(lo_lon, lo_lat)
-        sx1, sy1 = merc(hi_lon, hi_lat)
-        ax.add_patch(Rectangle((sx0, sy0), sx1 - sx0, sy1 - sy0, fill=False,
-                               edgecolor="magenta", linewidth=2.2,
-                               linestyle="--", zorder=5.5))
-        ax.annotate(b["label"], xy=((sx0 + sx1) / 2, (sy0 + sy1) / 2),
-                    ha="center", va="center", fontsize=11, fontweight="bold",
-                    color="black", zorder=6.5,
-                    bbox=dict(boxstyle="round,pad=0.25", fc="violet", ec="magenta",
-                              alpha=0.85))
-        print(f"    {b['label']}: {kind_str}  "
-              f"lat [{lo_lat:.6f}, {hi_lat:.6f}]  lon [{lo_lon:.6f}, {hi_lon:.6f}]")
-        csv_rows.append({
-            "label": b["label"], "contains": kind_str,
-            "lat_min": f"{lo_lat:.6f}", "lat_max": f"{hi_lat:.6f}",
-            "lon_min": f"{lo_lon:.6f}", "lon_max": f"{hi_lon:.6f}",
-        })
-        if not shift_handle_added:
-            handles.append(Patch(facecolor="none", edgecolor="magenta", linewidth=2.2,
-                                 linestyle="--", label="hand-picked box"))
-            shift_handle_added = True
+            sx0, sy0 = merc(lo_lon, lo_lat)
+            sx1, sy1 = merc(hi_lon, hi_lat)
+            ax.add_patch(Rectangle((sx0, sy0), sx1 - sx0, sy1 - sy0, fill=False,
+                                   edgecolor="magenta", linewidth=2.2,
+                                   linestyle="--", zorder=5.5))
+            ax.annotate(direction, xy=((sx0 + sx1) / 2, (sy0 + sy1) / 2),
+                        ha="center", va="center", fontsize=11, fontweight="bold",
+                        color="black", zorder=6.5,
+                        bbox=dict(boxstyle="round,pad=0.25", fc="violet", ec="magenta",
+                                  alpha=0.85))
+            print(f"    {direction:>2}: {kind_str}  "
+                  f"lat [{lo_lat:.6f}, {hi_lat:.6f}]  lon [{lo_lon:.6f}, {hi_lon:.6f}]")
+            csv_rows.append({
+                "label": direction, "contains": kind_str,
+                "lat_min": f"{lo_lat:.6f}", "lat_max": f"{hi_lat:.6f}",
+                "lon_min": f"{lo_lon:.6f}", "lon_max": f"{hi_lon:.6f}",
+            })
+            if not shift_handle_added:
+                handles.append(Patch(facecolor="none", edgecolor="magenta", linewidth=2.2,
+                                     linestyle="--",
+                                     label=f"{RING_CELL_KM:.0f} km ring box"))
+                shift_handle_added = True
 
-    with open(OUT_BOX_CSV, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=[
-            "label", "contains", "lat_min", "lat_max", "lon_min", "lon_max"])
-        writer.writeheader()
-        writer.writerows(csv_rows)
-    print(f"    wrote {OUT_BOX_CSV}")
+        with open(OUT_BOX_CSV, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=[
+                "label", "contains", "lat_min", "lat_max", "lon_min", "lon_max"])
+            writer.writeheader()
+            writer.writerows(csv_rows)
+        print(f"    wrote {OUT_BOX_CSV}")
 
     ccx, ccy = merc(CENTER_LON, CENTER_LAT)
     ax.plot([ccx], [ccy], marker="+", ms=16, mew=2.5, color="black", zorder=6)
@@ -733,12 +714,11 @@ def main():
     print(f"window lat [{south:.5f}, {north:.5f}]  lon [{west:.5f}, {east:.5f}]  "
           f"({BOX_KM:.0f} km square)")
 
-    base_img, base_extent = fetch_osm_basemap(west, south, east, north, ZOOM)
     data, transform = read_pop_window(TIF_PATH, west, south, east, north)
     feats = fetch_osm_features(west, south, east, north, OSM_LAYERS)
 
-    figure_population(base_img, base_extent, west, south, east, north, data, transform)
-    figure_osm(base_img, base_extent, west, south, east, north, feats)
+    figure_population(west, south, east, north, data, transform)
+    figure_osm(west, south, east, north, feats)
 
 
 if __name__ == "__main__":
