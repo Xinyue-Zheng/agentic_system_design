@@ -10,8 +10,9 @@ Valley (Monterey County) and writes TWO figures:
      printed to the console.
   2. osm_features_map.png  -- OSM interest features on the OSM basemap:
        highway / railway (lines), landuse / leisure / building (polygons),
-       amenity (points). The clusters of POIs (towns) are boxed and their
-       lat-lon ranges are annotated *on the map*.
+       amenity (points). Amenity POIs and residential landuse parcels are
+       clustered together into "settlement" boxes wherever they sit close to
+       each other, and each box's lat-lon range is annotated *on the map*.
 
 Everything is drawn in Web Mercator (EPSG:3857) so the overlays line up exactly
 with the OSM tiles (which are natively Mercator).
@@ -52,8 +53,18 @@ ZOOM = 12               # OSM tile zoom level
 DENSE_FLOOR = 50.0      # a cell counts as "populated" at >= this many persons/km^2
 MIN_CLUSTER_CELLS = 2   # ignore population blobs smaller than this many cells
 
-POI_CELL_KM = 1.5       # grid size for clustering OSM POIs into "towns"
-POI_MIN_POINTS = 10     # ignore POI clusters with fewer amenities than this
+POI_CELL_KM = 1.5       # grid size for clustering OSM amenity POIs into "towns"
+POI_MIN_POINTS = 10     # ignore amenity clusters with fewer POIs than this
+
+RESIDENTIAL_CELL_KM = 0.6    # grid size for clustering *residential* parcels alone.
+                             # kept smaller than POI_CELL_KM so isolated farmhouses
+                             # strung out along a road (common in farmland) don't
+                             # chain distant towns together into one giant cluster.
+RESIDENTIAL_MIN_PARCELS = 10  # ignore residential blobs with fewer parcels than this
+                              # (a handful of neighboring farmhouses isn't a "settlement")
+MERGE_BUFFER_DEG = 0.005     # after clustering amenity POIs and residential parcels
+                             # separately, merge boxes that end up within this many
+                             # degrees (~500 m) of each other into one settlement box
 
 OUT_POP = "pop_density_map.png"
 OUT_OSM = "osm_features_map.png"
@@ -274,6 +285,35 @@ def grid_clusters(lons, lats, west, south, lat0, cell_km, min_points):
         if len(idxs) >= min_points:
             clusters.append(np.array(idxs))
     return clusters
+
+
+def merge_close_boxes(boxes, buf):
+    """Merge lon/lat bounding boxes that overlap or sit within `buf` degrees.
+
+    Each box is a dict with lo_lon/hi_lon/lo_lat/hi_lat plus arbitrary extra
+    keys (e.g. counts) that are summed on merge. Runs until no more merges apply.
+    """
+    boxes = list(boxes)
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(boxes)):
+            for j in range(i + 1, len(boxes)):
+                a, b = boxes[i], boxes[j]
+                close = not (a["hi_lon"] + buf < b["lo_lon"] or b["hi_lon"] + buf < a["lo_lon"] or
+                            a["hi_lat"] + buf < b["lo_lat"] or b["hi_lat"] + buf < a["lo_lat"])
+                if close:
+                    boxes[i] = {
+                        "lo_lon": min(a["lo_lon"], b["lo_lon"]), "hi_lon": max(a["hi_lon"], b["hi_lon"]),
+                        "lo_lat": min(a["lo_lat"], b["lo_lat"]), "hi_lat": max(a["hi_lat"], b["hi_lat"]),
+                        "amen": a["amen"] + b["amen"], "res": a["res"] + b["res"],
+                    }
+                    del boxes[j]
+                    changed = True
+                    break
+            if changed:
+                break
+    return boxes
 
 
 # ----------------------------------------------------------------------------
@@ -507,44 +547,74 @@ def figure_osm(base_img, base_extent, west, south, east, north, feats):
                                          alpha=0.9, zorder=3.5))
         handles.append(plt.Line2D([], [], color="#0033cc", lw=2.5, label="highway"))
 
-    # amenity points + cluster boxes with lat-lon ranges annotated on the map
+    # --- amenity points (scatter only) ---
+    alon = np.array([a[0] for a in feats["amenity"]]) if feats["amenity"] else np.array([])
+    alat = np.array([a[1] for a in feats["amenity"]]) if feats["amenity"] else np.array([])
     if OSM_LAYERS["amenity"] and feats["amenity"]:
-        alon = np.array([a[0] for a in feats["amenity"]])
-        alat = np.array([a[1] for a in feats["amenity"]])
         axm, aym = merc_arr(alon, alat)
         ax.scatter(axm, aym, s=12, c=AMENITY_COLOR, marker="o", alpha=0.85,
                    edgecolors="white", linewidths=0.3, zorder=4)
         handles.append(plt.Line2D([], [], color=AMENITY_COLOR, marker="o", ls="none",
                                   ms=7, mec="white", label="amenity (POI)"))
 
-        clusters = grid_clusters(alon, alat, west, south, CENTER_LAT,
-                                 POI_CELL_KM, POI_MIN_POINTS)
-        clusters.sort(key=len, reverse=True)
-        print(f"  {len(clusters)} POI cluster(s):")
-        pad = 0.004  # deg padding around the box
-        for i, idx in enumerate(clusters, 1):
-            lo_lon, hi_lon = alon[idx].min() - pad, alon[idx].max() + pad
-            lo_lat, hi_lat = alat[idx].min() - pad, alat[idx].max() + pad
-            x0, y0 = merc(lo_lon, lo_lat)
-            x1, y1 = merc(hi_lon, hi_lat)
-            ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False,
-                                   edgecolor="red", linewidth=2.0, zorder=5))
-            label = (f"POI cluster #{i} ({len(idx)} POIs)\n"
-                     f"lat {lo_lat + pad:.4f}~{hi_lat - pad:.4f}\n"
-                     f"lon {lo_lon + pad:.4f}~{hi_lon - pad:.4f}")
-            # put the label below the box if its top is near the top of the frame
-            if y1 > yt - (yt - yb) * 0.12:
-                anchor_y, dy, va = y0, -6, "top"
-            else:
-                anchor_y, dy, va = y1, 6, "bottom"
-            ax.annotate(label, xy=((x0 + x1) / 2, anchor_y), xytext=(0, dy),
-                        textcoords="offset points", ha="center", va=va,
-                        fontsize=8, color="black", zorder=6,
-                        bbox=dict(boxstyle="round,pad=0.3", fc="yellow", ec="red",
-                                  alpha=0.85))
-            print(f"    #{i}: {len(idx)} POIs  "
-                  f"lat [{alat[idx].min():.5f}, {alat[idx].max():.5f}]  "
-                  f"lon [{alon[idx].min():.5f}, {alon[idx].max():.5f}]")
+    # --- residential landuse parcels ---
+    residential_geoms = [geom for geom, v in feats.get("landuse", []) if v == "residential"]
+    res_cen_lon = np.array([np.mean([p["lon"] for p in g]) for g in residential_geoms]) \
+        if residential_geoms else np.array([])
+    res_cen_lat = np.array([np.mean([p["lat"] for p in g]) for g in residential_geoms]) \
+        if residential_geoms else np.array([])
+
+    # Cluster amenity POIs and residential parcels SEPARATELY first (each with its
+    # own grid size / density threshold), then merge only the resulting boxes that
+    # actually sit close together. Combining the raw points into one clustering
+    # pass would let a string of isolated roadside farmhouses (each tagged
+    # landuse=residential) bridge two unrelated towns into one giant box.
+    raw_boxes = []
+    if alon.size:
+        for idx in grid_clusters(alon, alat, west, south, CENTER_LAT,
+                                 POI_CELL_KM, POI_MIN_POINTS):
+            raw_boxes.append({"lo_lon": float(alon[idx].min()), "hi_lon": float(alon[idx].max()),
+                              "lo_lat": float(alat[idx].min()), "hi_lat": float(alat[idx].max()),
+                              "amen": int(idx.size), "res": 0})
+    if res_cen_lon.size:
+        for idx in grid_clusters(res_cen_lon, res_cen_lat, west, south, CENTER_LAT,
+                                 RESIDENTIAL_CELL_KM, RESIDENTIAL_MIN_PARCELS):
+            lons = [pt["lon"] for k in idx for pt in residential_geoms[k]]
+            lats = [pt["lat"] for k in idx for pt in residential_geoms[k]]
+            raw_boxes.append({"lo_lon": min(lons), "hi_lon": max(lons),
+                              "lo_lat": min(lats), "hi_lat": max(lats),
+                              "amen": 0, "res": int(idx.size)})
+
+    boxes = merge_close_boxes(raw_boxes, MERGE_BUFFER_DEG)
+    boxes.sort(key=lambda b: b["amen"] + b["res"], reverse=True)
+    print(f"  {len(boxes)} settlement cluster(s) (amenity + residential):")
+    pad = 0.004  # deg padding around the box
+    if boxes:
+        handles.append(Patch(facecolor="none", edgecolor="red", linewidth=2.0,
+                             label="settlement cluster (amenity + residential)"))
+    for i, b in enumerate(boxes, 1):
+        lo_lon, hi_lon = b["lo_lon"] - pad, b["hi_lon"] + pad
+        lo_lat, hi_lat = b["lo_lat"] - pad, b["hi_lat"] + pad
+        x0, y0 = merc(lo_lon, lo_lat)
+        x1, y1 = merc(hi_lon, hi_lat)
+        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False,
+                               edgecolor="red", linewidth=2.0, zorder=5))
+        label = (f"cluster #{i}: {b['amen']} POI, {b['res']} residential parcel\n"
+                 f"lat {lo_lat + pad:.4f}~{hi_lat - pad:.4f}\n"
+                 f"lon {lo_lon + pad:.4f}~{hi_lon - pad:.4f}")
+        # put the label below the box if its top is near the top of the frame
+        if y1 > yt - (yt - yb) * 0.12:
+            anchor_y, dy, va = y0, -6, "top"
+        else:
+            anchor_y, dy, va = y1, 6, "bottom"
+        ax.annotate(label, xy=((x0 + x1) / 2, anchor_y), xytext=(0, dy),
+                    textcoords="offset points", ha="center", va=va,
+                    fontsize=8, color="black", zorder=6,
+                    bbox=dict(boxstyle="round,pad=0.3", fc="yellow", ec="red",
+                              alpha=0.85))
+        print(f"    #{i}: {b['amen']} POI, {b['res']} residential parcel(s)  "
+              f"lat [{lo_lat + pad:.5f}, {hi_lat - pad:.5f}]  "
+              f"lon [{lo_lon + pad:.5f}, {hi_lon - pad:.5f}]")
 
     ccx, ccy = merc(CENTER_LON, CENTER_LAT)
     ax.plot([ccx], [ccy], marker="+", ms=16, mew=2.5, color="black", zorder=6)
