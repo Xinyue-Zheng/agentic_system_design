@@ -42,7 +42,6 @@ version_5/test.py
 
 # Jupyter
 .ipynb_checkpoints/
-*.ipynb
 
 # OS
 .DS_Store
