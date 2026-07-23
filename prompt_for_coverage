@@ -1,0 +1,67 @@
+# Cellular Coverage Overlap Analysis
+
+## Configuration
+
+Target Cell Prefix:
+
+<TARGET_CELL_PREFIX>
+
+Only cells whose IDs start with this prefix should be treated as target cells.
+
+---
+
+## Goal
+
+Given the coverage map and the JSON file containing sampled coordinates, Serving Cell, and RSRP values, analyze each target cell independently and identify the neighboring cells most likely to absorb its traffic after an outage.
+
+---
+
+## Data Filtering
+
+- Only keep valid cell IDs matching:
+  ```
+  ^[A-Za-z]{3}[0-9]{5}$
+  ```
+- Ignore null, NaN, Unknown, Serving Cell labels, and any invalid IDs.
+- Aggregate duplicate observations of the same candidate cell.
+
+---
+
+## Analysis
+
+For each target cell:
+
+1. Define its coverage using two thresholds:
+   - Conservative: RSRP > -105 dBm
+   - Aggressive: RSRP > -95 dBm
+
+2. Find neighboring cells overlapping with the target coverage using the same thresholds.
+
+3. For each neighboring cell, compute:
+   - Overlap points
+   - Overlap percentage
+   - Mean RSRP
+   - Maximum RSRP
+
+4. Rank neighboring cells by overlap quality.
+
+5. Heuristically estimate which neighbors are most likely to absorb traffic based on:
+   - overlap size
+   - RSRP strength
+   - coverage continuity
+   - competition from other neighbors
+
+Do not build a mathematical prediction model or fabricate precise numbers.
+
+---
+
+## Output
+
+For each target cell, provide:
+
+- Target Cell ID
+- Top 5–10 neighboring cells ranked by takeover likelihood
+- Overlap statistics
+- Estimated traffic redistribution (prefer ranges)
+- Brief reasoning
+- Overall confidence and uncertainty
