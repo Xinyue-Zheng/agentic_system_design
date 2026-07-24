@@ -1,0 +1,111 @@
+Implement a rough engineering model to estimate traffic redistribution after one or multiple serving cells go down.
+
+Inputs
+------
+1. Coverage data
+   - Coordinates
+   - RSRP of every cell at every coordinate
+
+2. Historical statistics
+   - Average RRC connections of each cell
+   - Average PRB utilization of each cell
+
+3. GIS data
+   - Population density
+   - OSM land-use / feature labels
+     (residential, commercial, highway, industrial, farmland, forest, etc.)
+
+4. Target outage cells
+
+-------------------------------------------------------
+
+Step 1. Estimate pre-outage demand distribution.
+
+For each outage cell:
+
+Compute a demand score for every coordinate covered by the cell:
+
+DemandScore =
+PopulationDensity
+× OSMWeight
+× exp((RSRP+120)/10)
+
+Normalize all demand scores so that they sum to 1.
+
+Distribute the historical RRC of the outage cell to every coordinate according to the normalized demand score.
+
+-------------------------------------------------------
+
+Step 2. Redistribute traffic.
+
+For every coordinate:
+
+Find all remaining cells with RSRP > -105 dBm.
+
+If no candidate exists:
+    classify as Coverage Hole.
+
+Otherwise compute
+
+Softmax(RSRP)
+
+over all candidate cells.
+
+Distribute the coordinate RRC proportionally according to the softmax weights.
+
+-------------------------------------------------------
+
+Step 3. Estimate PRB increase.
+
+For every cell:
+
+Compute
+
+ResourcePerConnection =
+HistoricalPRB / HistoricalRRC
+
+Estimate
+
+AdditionalPRB =
+ResourcePerConnection × redistributed RRC
+
+Update
+
+NewPRB =
+HistoricalPRB + AdditionalPRB
+
+-------------------------------------------------------
+
+Step 4. Classify every coordinate.
+
+Coverage Hole:
+    no candidate cell
+
+Weak Coverage:
+    strongest backup RSRP between -115 and -105 dBm
+
+Capacity Limited:
+    strongest backup exists
+    but its estimated PRB > 90%
+
+Healthy:
+    backup RSRP > -105 dBm
+    estimated PRB <= 90%
+
+-------------------------------------------------------
+
+Step 5. Aggregate results.
+
+Group neighbouring coordinates into contiguous regions.
+
+Summarize each region by
+
+- dominant OSM feature
+- average population density
+- number of coordinates
+- percentage Healthy
+- percentage Weak Coverage
+- percentage Capacity Limited
+- percentage Coverage Hole
+
+Generate visualizations and statistics for every region.
