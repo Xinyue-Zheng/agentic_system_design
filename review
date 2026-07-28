@@ -1,0 +1,185 @@
+Review #240A
+Overall merit
+3. 
+Weak accept (A paper that you are okay with being accepted, you will not argue against it. The paper is correct with potentially limited novelty or unconvincing evaluation.)
+Experimental methodology
+3. 
+Average
+Reviewer expertise
+3. 
+Knowledgeable - Have published or have worked in this area or a related area
+Paper summary
+This paper proposes RAN-NFM, a multimodal foundation model framework for cellular RAN profiling and behavior prediction. The framework consists of RAN-NFM-Base (self-supervised, task-agnostic pretraining using SAINT for tabular data and PatchTST for time-series, fused via cross-attention), RAN-NFM-Core (lightweight fine-tuning without LLM), and RAN-NFM-Pro (incorporating LLM-derived features via LoRA). The model is pretrained on 561M samples from 166K sectors of a tier-1 U.S. provider's LTE network. The evaluation spans two use cases, i.e., configuration tuning (classification) and energy-saving throughput prediction (regression). RAN-NFM-Core achieves 8.6% AUPRC improvement over the production baseline while being 168x more memory-efficient than LLM-based alternatives, and RAN-NFM-Pro achieves the best accuracy overall.
+Reasons to accept
+No prior has implemented a system combining tabular configuration data, time-series KPIs, and optionally LLM-derived features into a unified foundation model for RAN cell profiling. Existing telecom foundation models are either text-only (TelecomGPT), single-modality (Large Wireless Model for RF data), or address different networking domains entirely (NetLLM targets video streaming and job scheduling). The gap is explicitly identified in recent survey papers on telecom foundation models (2024-2025) as an open challenge, thus this paper fills a clear gap.
+
+The decision to use specialized encoders (SAINT for tabular, PatchTST for time-series) rather than forcing all data through an LLM is well-supported by recent evidence (NeurIPS 2024 spotlight paper [25]) showing LLMs perform poorly on regression-based time-series forecasting (though there are techniques like Chronos - cited in the paper as reference [1] - that do this effectively while restricted to univariate time series) The Core vs. Pro dichotomy (168x memory reduction with competitive accuracy) is a practically useful design point. The cross-attention fusion using linear attention [14] to control computational cost is a sensible engineering choice.
+
+The paper demonstrates deployment with a tier-1 U.S. service provider. The field deployment results (Section 5.5) show that RAN-NFM-Pro consistently delivers the highest throughput gains across bottom-20% and mid-60% sectors compared to the Auric XGB baseline, which is a very strong outcome.
+
+The what-if analysis capability, i.e., predicting how the RAN would behave if a configuration change or outage occurs addresses a real operational need. The Event Injection Fine-Tuning (EIFT) design (Section 3.4), which injects event embeddings during fine-tuning via a dedicated encoder branch, is clean and the ablation study (Figure 6c) shows it substantially outperforms both vanilla MLP and partial-head alternatives.
+
+Pretraining on 561M samples from 166K sectors over 6 months of real operational data is really solid. The feature set (Table 5) is comprehensive and reflects operator knowledge of what matters for RAN profiling.
+
+Reasons not to accept
+A hallmark of foundation models is their ability to generalize across tasks, ideally with few-shot or zero-shot transfer. RAN-NFM is evaluated on only two downstream tasks, both of which predict throughput (one as classification, one as regression). This is insufficient to support the claim of "a wide range of downstream tasks" (Section 1, contribution 2). True foundation model evaluation would demonstrate transfer to genuinely diverse tasks, e.g., latency, jitter, mobility management, or capacity planning. Without this, RAN-NFM is better characterized as a multi-modal pretrained model with task-specific fine-tuning, not a foundation model in the established sense.
+
+The entire evaluation uses data from a single tier-1 U.S. LTE provider. While this is good, Section 7 ("Adaptability Cross RAN Technology and Service Providers") claims the model can adapt to 5G SA, future 6G, and different providers, but it does not provide any evidence. This gap should be closed: LTE and 5G NR have fundamentally different RAN parameters, KPI definitions, and radio behaviors.
+
+For RANPerf, the best AUPRC is 0.286 (RAN-NFM-Pro, Table 1) and the best F1 is 0.318 which are low in absolute terms. From the PR curve (Figure 6a), at 20% recall RAN-NFM-Pro achieves roughly 50% precision which means that half of all recommended configuration changes would fail to produce the promised 30% throughput improvement. While improvements over the baseline are real, one might question whether these models are accurate enough for production-grade automated decision-making. The paper would benefit from a discussion on the absolute performance ceiling and what limits it.
+
+The paper motivates the architecture by arguing that "LLM-only adaptation performs poorly on regression-based time-series forecasting" (Section 1). Yet RAN-NFM-Pro which incorporates an LLM branch outperforms RAN-NFM-Core consistently. For EngSav (the regression task), RAN-NFM-Pro achieves 14% lower MAPE than the baseline while RAN-NFM-Core achieves only 6% lower MAPE. The paper should clarify this contraddiction: is the LLM contributing through improved representation learning rather than direct regression? What exactly does the LLM branch learn that cross-attention alone cannot capture?
+
+The RANPerf field deployment results (Section 5.5.1) reports mean delta throughput across sector groups but provides no confidence intervals or any other significance testing. If a bottom-20% sector improves, was it because of the model's recommendation or would it have improved anyway? For EngSav (Section 5.5.2), the reported metric (MAD vs. the baseline policy) measures divergence from the prior production solution, not actual energy savings or throughput impact. To be a meaningful measure of model quality, one would need to see actual energy savings and measured throughput.
+
+Other unclear aspects. (a) The cross-attention design uses time-series as query and tabular as key/value (Section 3.2.2). Why this direction? An ablation swapping query/key assignments would clarify benefits of this decision. (b) General-purpose time-series foundation models (Chronos [1], TimesFM) are not compared against. Only encoder-substitution experiments (TPBERTa, TTMs, TimeMixer) are reported, and these perform extremely poorly (TPB-TTMs: AUPRC 0.0439), suggesting they may not have been properly tuned or adapted. (c) No comparison with traditional multi-task learning approaches that share a backbone but train multiple task heads jointly.
+
+Comments for authors
+Thank you for submitting to SIGCOMM. I appreciate the work around RAN-NFM. Making RAN managment easier and automatizable is a problem that the community has looked into for long time, and RAN-NFM is another step into realizing this vision. That said, there are several areas that need further clarification.
+
+Suggested Changes based on Weaknesses
+
+Evaluation:
+
+-- Even a small-scale experiment on 5G NR data or data from a second provider would substantially strengthen Section 7's claims. If the data is unavailable, at least acknowledge this as a limitation rather than presenting unsubstantiated generalization claims.
+
+-- TPB-TTMs achieving 0.0439 AUPRC (barely above random) suggests a configuration or adaptation problem rather than a fundamental limitation of those encoders. This weakens the ablation study's conclusions. Please report how these models were adapted and whether hyperparameter search was conducted.
+
+Discussion
+
+-- Two tasks is not enough to justify "foundation model" claims. Adding 2-3 more diverse tasks and demonstrating few-shot adaptation with limited labeled data per task would significantly improve the paper. If this is infeasible, reframe the contribution as a "multi-modal pretrained model for RAN throughput prediction" rather than a general-purpose foundation model.
+
+-- An AUPRC of 0.286 and F1 of 0.318 suggest this is an inherently difficult task. Is this because the 30% threshold is too aggressive? Because the feature set is insufficient (e.g., missing interference information from neighboring cells, user mobility patterns, spectrum conditions)? Or because the positive class is too rare? Understanding the limiting factors matters more than incrementally improving over a weak baseline.
+
+Minor Issues
+
+Section 4.2, paragraph on RANPerf: "This task is build on top" should be "This task is built on top."
+Section 5.1: The StatF-MLP baseline description is duplicated (paragraphs 2 and 3 under "Baselines Solutions" describe it identically).
+Table 5: The feature ARPPRIORITYLEVELFORSPIFHO appears twice in the configuration features list (under "Load Steering Parameters" and "Mobility Parameters") with the same description.
+Section 8 (Conclusion): "RAN-NFM-Core, a multi-model RAN foundation model" -- "multi-model" should be "multi-modal." Also, "adaption" should be "adaptation" (appears twice).
+The paper claims 34 features total (21 config + 5 categorical + 8 KPI) but Table 5 lists only 7 KPI features under "KPI Time-Series Features" (the 8th, DrbThpVolQCI6to9, appears to be the target variable in some tasks).
+Clarification Questions for Authors
+
+How does the model handle temporal distribution shift? RAN configurations and traffic patterns change over time (e.g., new spectrum deployments, subscriber growth). Has any analysis been done on model staleness?
+What is the positive-class ratio for the RANPerf task? The PR curve and low AUPRC suggest extreme class imbalance. How was this addressed during training?
+For the energy-saving use case, how are ground-truth labels obtained? The paper mentions "historical real-world cell-sleeping scenarios." Does this mean only sectors that have already been put to sleep are included? If so, this creates selection bias.
+Why was the pretraining objective limited to masked time-series reconstruction? Did you experiment with joint reconstruction of tabular features, or contrastive objectives?
+Review #240B
+Overall merit
+2. 
+Weak reject (A paper that you want to reject, but will not champion rejection if there are positive reviews (e.g., '3's or above). The paper is correct with potentially limited novelty or unconvincing evaluation.)
+Experimental methodology
+3. 
+Average
+Reviewer expertise
+3. 
+Knowledgeable - Have published or have worked in this area or a related area
+Paper summary
+RAN-NFM introduces a multimodal foundation-model framework for cellular RAN profiling, aiming to replace task-specific models that cannot generalize across diverse operational tasks. The authors design RAN-NFM-Base, a self-supervised backbone that jointly learns tabular RAN configuration features and KPI time-series dynamics via specialized encoders and cross-modal attention, enabling reusable, task-agnostic representations. Two adaptation variants are built on top: RAN-NFM-Core, a lightweight cross-attention–only model for cost-sensitive deployments, and RAN-NFM-Pro, which further incorporates an LLM branch for maximum accuracy. Using six months of real 2025 data from a cellular network operator, the framework is evaluated on two practical tasks—configuration-change impact prediction (RANPerf) and throughput forecasting for energy-saving cell-sleeping (EngSav). Experiment results show that RAN-NFM outperforms production baselines.
+Reasons to accept
+The paper introduces a domain-tailored architecture that effectively captures relationships between RAN configuration data and KPI time-series, outperforming generic encoders and LLM-only baselines.
+
+Experiment results show that RAN-NFM outperforms production baselines. The models have been successfully deployed for 6+ months in a tier-1 U.S. operator’s live network.
+
+Reasons not to accept
+Key technical contribution seem unclear or weak. It assembles a few well-known techniques in AI.
+
+Although this paper motivates the necessity of a multi-modal foundation model in RAN, the evaluation of its generalizability is quite limited. It only tests in two use cases.
+
+Comments for authors
+This paper presents a framework for multimodal RAN foundation modeling. The proposed architecture aligns naturally with the heterogeneous structure of RAN data and achieves strong gains over both production systems and generic encoder baselines. The large-scale self-supervised pretraining on operational samples provides strong generalization.
+
+However, several areas could be strengthened:
+
+Although this paper motivates the necessity of a multi-modal foundation model in RAN, the evaluation of its generalizability is quite limited. It only tests in two use cases. It is unclear if the foundation model can support multiple downstream applications as claimed.
+
+The motivation can be better clarified. The discussion of prior work, especially NetLLM, is limited. The paper states that LLM-only adaptation performs poorly on regression-based RAN tasks but does not explain why or whether improved LLM adaptation strategies could close the gap, leaving unclear whether a new domain-specific foundation model is truly necessary. If true, a follow-up question is, why would time-series foundation models not transfer in the RAN setting, and what properties of RAN data or objectives prevent those approaches from being effective? Clarifying this would strengthen the argument that RAN-specific multimodal pretraining is uniquely necessary rather than one possible design choice among several competitive alternatives.
+
+The problem formulation is not clear. The paper does not clearly delineate RAN management tasks. In the absence of this contextual grounding, readers lack a clear understanding of the practical motivations behind the proposed design choices. Consequently, it becomes difficult to assess whether the model architecture and training strategy are genuinely aligned with real-world operational requirements. Providing a structured overview of typical RAN workflows, decision-making processes, and data modalities would substantially strengthen the paper’s claims regarding applicability and practical relevance.
+
+The technical contributions are not well presented. Most architectural components are adopted directly from prior work. As a result, this work seems to be an engineering-driven integration with limited technical contributions. Besides, the role and necessity of the LLM-based adaptation branch remain unclear (e.g., why this integration enhances feature learning). The conceptual justification behind these design choices could be strengthened.
+
+Writing and presentation issues. Several figures could be resized or reformatted for better readability, and the evaluation section, given its complexity, would benefit from an introductory overview at the beginning that explains the purpose of each experimental component and how each supports the paper’s main claims.
+
+The evaluation is based on real-world dataset, which is remarkable. Yet, there is not much insight into the dataset or the unique challenges of studied problem. No dataset is publically available for reproducible evaluation or validation.
+
+Review #240C
+Overall merit
+3. 
+Weak accept (A paper that you are okay with being accepted, you will not argue against it. The paper is correct with potentially limited novelty or unconvincing evaluation.)
+Experimental methodology
+3. 
+Average
+Reviewer expertise
+3. 
+Knowledgeable - Have published or have worked in this area or a related area
+Paper summary
+In this presented work, the authors proposed a multimodal foundation model framework for Radio Access Network (RAN) profiling and prediction tasks named RAN-NFM. The key motivation behind this design is that existing RAN optimization solutions rely on either rule-based heuristics or task-specific machine learning models that do not generalize across multiple operational tasks. In contrast, the proposed RAN-NFM model learns reusable representations from heterogeneous RAN data sources. Specifically, five interdependent modules were designed, i.e., SAINT tabular encoder for configuration data, PatchTST time-series encoder for KPI dynamics, cross-modal attention fusion to capture dependencies between modalities, EIFT (Event Injection Fine-Tuning) for what-if prediction tasks involving configuration changes, and the optional LLM module was adopted to enhance semantic representations. The authors further evaluate the performance of their proposed RAN-NFM model by using six months of real-world data from a tier-1 U.S. cellular provider, containing 166K sectors and 561M samples.
+Reasons to accept
+The design is well-motivated since the problem considered in this work, i.e., applying foundation models to network operations and RAN optimization, is timely and relevant, especially as networks generate increasingly large volumes of heterogeneous data.
+
+The proposed foundation model enables adaptation to multiple downstream tasks (e.g., classification, regression, etc.) using lightweight fine-tuning.
+
+The evaluation adopted large-scale real-world data.
+Reasons not to accept
+While the paper introduces a foundation model architecture, the core technical contributions primarily involve adaptation of existing ML architectures (SAINT, PatchTST, LoRA-based LLM adaptation). Accordingly, the novelty lies more in system integration.
+The evaluation mainly focused on ML baselines and prior learning-based approaches. The authors did not compare their work to other types of methods, such as control-theory-based network management solutions, deep Reinforcement Learning-based RAN optimization frameworks, etc.
+As mentioned in the paper, the proposed RAN-NFM model requires significant computing resources.
+Additionally, the authors did not test the generalizability and the robustness of the proposed RAN-NFM. For example, as network conditions evolve, how will the proposed method perform? How sensitive is the model to noisy or missing KPI measurements?
+Comments for authors
+Please check the comments above.
+Review #240D
+Overall merit
+2. 
+Weak reject (A paper that you want to reject, but will not champion rejection if there are positive reviews (e.g., '3's or above). The paper is correct with potentially limited novelty or unconvincing evaluation.)
+Experimental methodology
+3. 
+Average
+Reviewer expertise
+3. 
+Knowledgeable - Have published or have worked in this area or a related area
+Paper summary
+The paper proposes RAN-NFM, a multimodal foundation-model framework for cellular RAN management that combines sector configuration/property features with KPI time-series telemetry. It pretrains a shared backbone using self-supervised reconstruction of masked KPI sequences, then adapts the learned representation to downstream operational tasks via fine-tuning. To support "what-if" style queries tied to network actions, it introduces an event-conditioning fine-tuning mechanism and offers both a lightweight core model and a heavier variant augmented with language-model embeddings. The evaluation focuses on predicting performance gains from configuration changes and forecasting throughput under energy-saving cell sleeping scenarios.
+Reasons to accept
+It tackles an important problem of RAN configuration management with a foundation model-based approach.
+It shows evaluation results from field deployment
+Reasons not to accept
+Evidence for broad "task generalization" is limited by the chosen use cases.
+As the approach (FM + finetuning) is general, it is unclear whether there are unique challenges in the context of RAN management. The paper does not describe them clearly.
+Comments for authors
+Thanks for submitting your paper. The paper leverages large-scale RAN telemetry to build reusable models for performance and energy-related workflows and presents a coherent multimodal pipeline (property/config + KPI time series) with pretraining and downstream adaptation. While I like the high-level approach, several of the challenges and corresponding solutions feel less novel. Below are my comments on the ideas and questions.
+
+The paper motivates a foundation model as a way to generalize across diverse downstream RAN tasks. However, the main evaluated use cases are both throughput-centric and likely share similar signal sources and temporal structure. This makes it difficult to evaluate whether the approach truly generalizes beyond a narrow family of KPI prediction problems. Can you demonstrate transfer to at least one qualitatively different RAN task (e.g., mobility/handover anomalies, interference issues, KPI root-cause classification, paging/registration instability)? If additional tasks cannot be shown, can you scope the claim more clearly to throughput-related tasks rather than broad RAN FM generalization?
+
+Regarding the approach of fine-tuning the base model, it is unclear what is technically new here beyond adopting LoRA and offering two model sizes. Are there any unique challenges in the context of RAN management? What is the concrete operating scenario in which the Pro variant is expected to run? What retraining cadence and serving architecture are assumed for Pro? Can you provide a clearer cost/benefit justification showing Pro is needed and practically deployable (and when Core is insufficient)?
+
+Using cross-attention to fuse time-series embeddings with tabular/context features is a common design in multimodal forecasting and representation learning. While it may work well, it is not obvious what is uniquely RAN-specific about this mechanism. Do you have ablations against simpler multimodal fusion strategies, and can you explain what specific RAN property of the data makes cross-attention essential or challenging? What aspects of operator telemetry (e.g., sparse categorical configs, long-term indicators, nonstationarity) are you leveraging that prior multimodal forecasters do not?
+
+The paper highlights data quality and imbalance as a challenge in operational RAN telemetry, but the solution appears primarily to rely on scale and self-supervised pretraining, along with task-specific labeling thresholds. This is reasonable, but it is a fairly generic answer unless the paper provides concrete methods for handling imbalance/noise (e.g., sampling/weighting, calibration, robust losses, label-noise mitigation) and demonstrates that they matter. What specific data issues (missingness, noisy KPIs, shift across software versions, label imbalance) are most problematic in your datasets, and what specific mechanisms in your training pipeline address them? Can you quantify robustness improvements attributable to these choices (e.g., under severe imbalance or known noise regimes)?
+
+Review #240E
+Overall merit
+3. 
+Weak accept (A paper that you are okay with being accepted, you will not argue against it. The paper is correct with potentially limited novelty or unconvincing evaluation.)
+Experimental methodology
+4. 
+Good
+Reviewer expertise
+3. 
+Knowledgeable - Have published or have worked in this area or a related area
+Paper summary
+This paper describes RAN-NFM, a foundation model built to be able to generate cellular network configurations. Working with a national ("tier-1") operator, the authors gather lots of configuration and associated performance measurement data and generate said model with a clever selection of encodings suited to the task. The system is evaluated through a number of mechanisms, including an accuracy analysis, efficiency analysis, and a somewhat underspecified "field deployment" where it outperforms the state of the art.
+Reasons to accept
+Impressive engineering effort with partnerships and system building Very thorough evaluation with only a few missing elements Great description of the solution space and comparison across alternatives.
+Reasons not to accept
+A bit of the "here's a giant pool of data, we made a model" style of ML/Systems work going around; would be good to have an ablation study on the configuration variables themselves Evaluation generally good but the field study is underspecified; it's not clear if this was run in prod or through some other evaluation (I am assuming the latter) A lot of the figures are really hard to interpret.
+Comments for authors
+Thanks for the submission! While I'm positive, I do have some concerns. On the positive side, there's been a few of these ML-for-cellular-config papers in my stack at the last few venues and this seems to me to be the strongest; the assumptions are limited and the data source seems solid. I am convinced the system works as described and provides a benefit.
+
+On the negative side, I have two main issues. First, while the overall engineering is impressive it's not really clear what's important here from the configuration side; generally these systems find a few critical variables to tweak and much of the remaining has relatively little impact. Given the large number of configuration variables involved, that seems likely the case here. This could mean that the partner's network could be better served through a much simpler optimization function on a smaller number of variables or that the existing system is suboptimally tuned for some reason outside of the researcher understanding. This is supported by the power study where we learned that history was a bad predictor in that case. A light ablation study, potentially informed by the actual configuration changes from the field study, would be a good exploration. It's hard to truly believe that the whole model is that important. I'm not even sure why we chose these variables to begin with.
+
+Second, the "field study" is pretty wildly underspecified; it's not clear if the system as "deployed in production for more than six months" means it was actually changing production configurations and seeing measured changes or if we're doing predictions on a production network. If it's the former, that's really impressive. We just need more background on the deployment; rough location, number of variables changed, etc.
+
+Lastly, the figures are rough; 6b for example seems to give a light indication of improved performance but the degree is unclear. Same with most of 7. You might consider pushing a few to the appendix and focusing on the most important results.
+
+Some smaller issues: The sentence ""The results from both use cases demonstrate that these single modality, general purpose tabular and time-series encoders are not optimal for the RAN profiling task." is repeated
