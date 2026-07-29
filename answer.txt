@@ -1,0 +1,11 @@
+Use an adapter-only adaptation protocol:
+
+* **Configuration encoder:** load the LTE-pretrained weights and freeze.
+* **KPI embedding/encoder:** reuse the LTE-pretrained module and freeze.
+* **Cross-attention:** reuse and freeze.
+* **Reconstruction head:** reuse and freeze.
+* **5G configuration tokenizer:** newly initialized and trained.
+* **Adapters:** newly initialized and trained to align the tokenizer output with the pretrained configuration encoder and cross-attention interfaces.
+* **Modality mask:** fixed mask indicating that configuration and KPI are available, while attribute is unavailable.
+
+Train only the 5G tokenizer and adapters using the original KPI reconstruction loss. For the unavailable KPI, retain the original KPI input structure and mask that KPI from the attention and reconstruction loss.
