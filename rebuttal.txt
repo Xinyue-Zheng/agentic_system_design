@@ -1,0 +1,14 @@
+We thank the reviewers for their constructive feedback. Below, we address the major concerns; other comments will be addressed in the final submission with additional evaluation results, design justification, and clarification.
+
+1. "Foundation-model" claim is under-supported by the two case studies.
+RAN-NFM is a foundation model purpose-built for RAN profiling and trained on RAN data broadly available across network providers. Rather than addressing all mobility network problems, RAN-NFM provides a reusable and extensible framework for RAN behavior modeling, a common foundation for tasks like forecasting, optimization, and impact assessment.
+
+We developed and validated RAN-NFM across ten real-world use cases, presenting two representative cases spanning three dimensions: (1) classification versus regression, (2) long-term trends versus short-term dynamics, and (3) heterogeneous deployment constraints. The full list can be included in an appendix. Throughput is used as the evaluation metric because it is a first-order operational objective across RAN tasks.
+
+2. What is the novelty in using existing modules?
+While RAN-NFM does not aim to introduce new ML architectures, its novelty lies in an engineering-driven system design tailored for RAN profiling. First, its architectural choices are grounded in empirical properties of RAN data. (1) Since RAN configuration changes can reshape KPI dynamics, KPI reconstruction from configuration data is incorporated during pretraining to capture such relationships. (2) Encoders for tabular and time-series data are selected based on each modality's characteristics. (3) Building on this, we introduce EIFT, a novel fine-tuning mechanism for what-if analysis with event injection --- an operationally important RAN task class not addressed by existing approaches.
+
+Second, RAN-NFM is built on 561M real-world samples from a tier-1 U.S. service provider, enabling rigorous evaluation under realistic conditions. Finally, RAN-NFM provides a unified and reusable foundation for RAN behavior modeling, where EIFT enables efficient adaptation across downstream tasks. Together, principled system design, real-world validation, and adaptation efficiency underpin the unique value of our work.
+
+3. Why is the LLM branch's contribution useful and when is it worth the cost?
+LLMs, pretrained on large-scale data, provide representations of high-level patterns and cross-feature dependencies that transfer to RAN data. However, as discussed in Section 7, they remain less effective for fine-grained quantitative modeling. This motivates training a foundation model directly on RAN data, with LLM-derived representations incorporated as an enhancement in RAN-NFM-Pro. Given its higher computational cost, RAN-NFM-Pro suits accuracy-critical scenarios such as offline tasks, while RAN-NFM-Core suits real-time applications with strict latency or resource constraints.
