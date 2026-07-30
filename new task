@@ -1,0 +1,31 @@
+Freeze the pretrained encoder and use it to generate an embedding (z_i) for each sample.
+Train a lightweight predictor on top of the embeddings using Huber loss. Huber loss is preferred over standard MSE because it is less sensitive to potentially anomalous samples in the historical data.
+Compute the prediction residual:
+[
+e_i = |y_i - \hat{y}_i|
+]
+A larger residual indicates that the observed value is inconsistent with what the embedding-based predictor expects.
+Apply an unsupervised outlier detection method, such as Isolation Forest or robust Mahalanobis distance, directly to the embeddings. This produces an embedding-space anomaly score (d_i).
+Normalize the two scores and combine them:
+[
+s_i = \alpha \tilde{e}_i + \beta \tilde{d}_i
+]
+Since the two scores may have very different scales and distributions, they should not be directly added. A simple option is to convert both scores into percentile ranks and then take their weighted average.
+Output an anomaly ranking rather than immediately assigning hard anomaly labels. For each sample, the system should also provide a score decomposition:
+Prediction residual score
+Embedding outlier score
+Combined anomaly score
+The overall pipeline is:
+Pretrained encoder
+        ↓
+     Embedding
+     ↙      ↘
+Predictor   Isolation Forest
+     ↓             ↓
+Residual score  Embedding score
+          ↘     ↙
+        Combined score
+              ↓
+       Anomaly ranking
+The two scores capture different types of abnormal behavior. The prediction residual measures whether the observed target is inconsistent with the expected value, while the embedding outlier score measures whether the sample itself lies outside the common representation distribution.
+One limitation is that the predictor is still trained on historical data that may already contain anomalies. If some anomalous patterns appear frequently, the predictor may gradually learn them as normal behavior. However, this is acceptable for a simple first baseline. More advanced techniques, such as iterative refinement or sample reweighting, can be added later.
