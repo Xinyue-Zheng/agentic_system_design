@@ -1,53 +1,405 @@
-I have already implemented and verified the 5G dataset loading pipeline, so each sample now contains the correct data. Please implement the 5G transfer/training pipeline based on the existing 4G implementation.
+I have already implemented and verified the 5G dataset loading pipeline. Each sample now contains the data I want, so please preserve the current dataset-loading logic unless a small change is strictly necessary for model input formatting.
 
-Before coding, inspect:
-- Existing 4G training/model code: [4G_TRAINING_CODE]
-- Current 5G workspace: [5G_WORKSPACE]
-- LTE→5G transfer plan: [TRANSFER_PLAN_MD]
-- Attached FT-Transformer paper for numerical vs. categorical feature tokenization.
+Your task is to implement the 4G→5G transfer/training pipeline.
 
-Tasks:
+Before writing code, carefully inspect:
 
-1. Load the original 4G pretrained model.
-   - Reconstruct/initialize the same model architecture used during 4G pretraining.
-   - Load the pretrained weights from:
-     [4G_PRETRAINED_CHECKPOINT]
-   - Verify that the checkpoint weights are correctly loaded before making any 5G-specific modifications.
-   - Preserve and reuse the pretrained components according to the transfer plan.
+- Original 4G model/training code:
+  [4G_TRAINING_CODE]
 
-2. Transfer the loaded 4G pretrained model to the 5G data following [TRANSFER_PLAN_MD].
-   Reuse/freeze the original pretrained components where specified, and introduce new 5G tokenizer/adapters only where necessary.
+- Original 4G pretrained checkpoint:
+  [4G_PRETRAINED_CHECKPOINT]
 
-3. Keep the current 5G dataset loading logic unchanged unless a small modification is required for model input formatting.
+- Current 5G workspace/training code:
+  [5G_WORKSPACE]
 
-4. Complete the tabular preprocessing/tokenization.
+- LTE→5G transfer specification:
+  [TRANSFER_PLAN_MD]
 
-   Categorical columns:
-   [CATEGORICAL_COLUMNS_LIST_PATH]
+- Attached FT-Transformer paper for the treatment of categorical and numerical tabular features.
 
-   Numerical columns:
-   [NUMERICAL_COLUMNS_LIST_PATH]
+Additional metadata:
 
-   CSV containing the valid categorical values / mappings for each categorical column:
-   [CATEGORICAL_VALUES_CSV_PATH]
+Categorical-column list:
+[CATEGORICAL_COLUMNS_LIST_PATH]
 
-   The current categorical values are still raw values. Convert them into integer category indices before passing them to embedding layers.
+Numerical-column list:
+[NUMERICAL_COLUMNS_LIST_PATH]
 
-5. Unlike the original 4G configuration data, which only used categorical features, the 5G configuration data contains both categorical and numerical features.
+CSV containing the valid categorical values/category mappings for each categorical column:
+[CATEGORICAL_VALUES_CSV_PATH]
 
-   Follow the FT-Transformer-style tokenizer:
-   - categorical feature → category index → feature-specific embedding lookup
-   - numerical feature → scalar value × feature-specific learnable vector
-   - both produce tokens with the same embedding dimension before entering the configuration Transformer/encoder.
 
-6. For all remaining steps, follow the existing 4G training pipeline as closely as possible, including batch handling, masking, forward pass, reconstruction loss, optimizer, DDP/IterableDataset behavior if applicable, validation, checkpointing, and logging.
+MAIN TASK
 
-Before implementing major changes, first inspect the existing 4G code and determine:
-- how the original 4G pretrained model is instantiated and how its checkpoint is loaded;
-- the exact tensor shapes expected by the pretrained configuration encoder and cross-attention;
-- which pretrained weights can be reused directly;
-- which modules need to be newly introduced for 5G;
-- whether the change in feature count requires token-count alignment/resampling;
-- and what changes are required to support the new numerical features.
+Implement the 5G transfer pipeline starting from the actual pretrained 4G model.
 
-Prefer minimal modifications. Reuse the existing 4G model classes, training utilities, and pipeline whenever possible instead of reimplementing them.
+Do NOT simply build a new 5G model that resembles the 4G model.
+
+First reconstruct/instantiate the exact original 4G pretrained architecture, load the pretrained checkpoint, verify that the weights are loaded correctly, and then build the 5G adaptation on top of the loaded pretrained components.
+
+
+STEP 1 — Inspect and load the original 4G pretrained model
+
+Before modifying anything:
+
+1. Identify exactly how the original 4G model is instantiated.
+2. Instantiate the same architecture.
+3. Load:
+   [4G_PRETRAINED_CHECKPOINT]
+4. Inspect and report:
+   - checkpoint state_dict keys;
+   - model state_dict keys;
+   - matched keys;
+   - missing keys;
+   - unexpected keys.
+5. Confirm that the pretrained components are genuinely loaded before starting the 5G transfer.
+
+If the old 4G tokenizer and pretrained backbone are defined inside the same model class, separate/reuse the relevant pretrained components cleanly rather than reimplementing them.
+
+
+STEP 2 — Automatically inspect the 4G model interfaces
+
+The transfer-plan .md contains implementation-dependent placeholders.
+
+Resolve them automatically from the actual 4G implementation instead of manually hard-coding dimensions.
+
+Inspect and determine:
+
+- original configuration tokenizer output shape;
+- pretrained configuration encoder input shape;
+- configuration encoder output shape;
+- KPI embedding/encoder input and output shapes;
+- cross-attention query/key/value dimensions;
+- reconstruction-head input/output dimensions;
+- pooling/flattening behavior;
+- positional embedding behavior;
+- whether any part of the original implementation assumes a fixed number of configuration tokens.
+
+In particular, check for things such as:
+
+- fixed 20-token flattening;
+- fixed-length positional embeddings;
+- Linear layers whose input dimension depends on the original 4G feature count;
+- fixed token-count assumptions before cross-attention.
+
+
+STEP 3 — Inspect the current 5G dataset
+
+Run/inspect one batch from the existing 5G dataset implementation and automatically determine:
+
+- number of categorical configuration features;
+- number of numerical configuration features;
+- total number of configuration features/tokens;
+- actual input tensor shapes;
+- KPI names;
+- KPI order;
+- KPI dimensions;
+- unavailable/missing KPI(s).
+
+Do not hard-code values that can be obtained from the dataset or metadata.
+
+
+STEP 4 — Complete categorical preprocessing
+
+The current categorical values are still raw values and have not yet been converted to indices.
+
+Use:
+
+[CATEGORICAL_COLUMNS_LIST_PATH]
+
+and:
+
+[CATEGORICAL_VALUES_CSV_PATH]
+
+For every categorical feature:
+
+raw value
+→ deterministic integer category index
+→ feature-specific embedding lookup
+→ d_model-dimensional token
+
+Each categorical column should have its own vocabulary/mapping.
+
+Make sure train/validation/test use the same mapping, and handle unseen/unknown categorical values explicitly.
+
+
+STEP 5 — Add numerical-feature support
+
+Unlike the original 4G tabular input, which only used categorical configuration features, the 5G configuration data contains both categorical and numerical features.
+
+Use:
+
+[NUMERICAL_COLUMNS_LIST_PATH]
+
+Follow the FT-Transformer-style feature tokenizer.
+
+Categorical feature:
+
+category index
+→ feature-specific embedding lookup
+→ d_model token
+
+Numerical feature:
+
+scalar x_j
+→ x_j * W_j
+→ optional/learned feature bias b_j
+→ d_model token
+
+Do NOT discretize numerical values into categorical indices.
+
+Stack categorical and numerical feature tokens along the feature/token dimension so that both enter the configuration Transformer using the same embedding dimension.
+
+Before adding numerical normalization, inspect the current dataset preprocessing.
+
+Do not silently introduce a new normalization method.
+
+If normalization is necessary:
+- make it explicit/configurable;
+- compute normalization statistics from the training split only;
+- reuse the same statistics for validation/test.
+
+
+STEP 6 — Implement the new 5G configuration tokenizer
+
+Create a new 5G-specific mixed-feature tokenizer that supports both categorical and numerical features.
+
+Conceptually:
+
+5G raw configuration
+→ categorical index conversion + numerical preprocessing
+→ categorical embeddings + numerical feature embeddings
+→ [B, N_5G_features, d_model]
+
+This tokenizer is newly initialized and trained on 5G data.
+
+Do not assume one-to-one correspondence between individual 4G and 5G configuration parameters.
+
+
+STEP 7 — Reuse the pretrained configuration encoder
+
+Reuse the original 4G pretrained configuration Transformer/encoder.
+
+Load its pretrained weights and freeze it during the main Stage-1 transfer experiment.
+
+Important:
+
+Do NOT automatically introduce a 67→20 mapping.
+
+First determine from the actual 4G implementation whether the pretrained configuration encoder supports variable-length feature/token sequences.
+
+If it supports variable token count, directly use:
+
+[B, N_5G_features, d_model]
+→ pretrained configuration encoder
+
+without reducing the 5G feature count.
+
+Only introduce token aggregation/resampling if the actual existing implementation requires a fixed number of tokens.
+
+
+STEP 8 — Add adapters only when required
+
+Compare the actual 5G tokenizer output with the interfaces required by the pretrained 4G modules.
+
+Add a lightweight input adapter only if the tokenizer embedding dimension or representation does not match the pretrained configuration encoder input.
+
+Add a representation adapter after the configuration encoder only if its output does not match the pretrained cross-attention interface.
+
+Possible lightweight adapter:
+
+LayerNorm
+→ Linear
+→ GELU
+→ Linear
+
+But prefer no adapter or the smallest possible adapter whenever the interfaces already match.
+
+Only add token-count resampling when a real fixed-token constraint exists in the original code.
+
+
+STEP 9 — Reuse and verify the KPI branch
+
+Reuse the original pretrained:
+
+- KPI embedding;
+- KPI encoder;
+- temporal KPI modeling;
+- inter-KPI attention.
+
+Before feeding 5G KPIs into this branch, verify:
+
+- 4G KPI names/order;
+- 5G KPI names/order;
+- KPI semantic correspondence;
+- original 4G KPI preprocessing/normalization;
+- current 5G KPI preprocessing/normalization.
+
+Do not assume that matching tensor dimensions mean the KPIs are aligned.
+
+Align them by KPI semantics/names, not only by tensor position.
+
+If one original KPI is unavailable in 5G:
+
+- preserve the original KPI structure/slot when required by the pretrained model;
+- create a KPI availability mask;
+- exclude the missing KPI from valid attention positions when necessary;
+- exclude it from reconstruction loss.
+
+Do not redesign the KPI encoder simply because one KPI is missing.
+
+
+STEP 10 — Reuse cross-attention
+
+Load and reuse the pretrained 4G cross-attention module.
+
+Freeze it in Stage 1.
+
+Preserve its original query/key/value dimensions.
+
+Use adapters outside the pretrained module if needed.
+
+A different number of configuration key/value tokens is acceptable if the original attention implementation supports variable sequence length.
+
+
+STEP 11 — Reuse the reconstruction head
+
+Reuse the original pretrained KPI reconstruction head whenever its output semantics remain compatible.
+
+Freeze it in Stage 1.
+
+Retain the original KPI reconstruction objective.
+
+Compute reconstruction loss only for:
+
+- available KPI channels;
+- positions selected by the original reconstruction mask.
+
+Prefer masking/alignment over replacing the pretrained reconstruction head.
+
+
+STEP 12 — Handle the unavailable attribute modality
+
+The original 4G model has configuration, attribute, and KPI modalities, while the current 5G dataset does not contain the original attribute modality.
+
+Use:
+
+[configuration, attribute, KPI] = [1, 0, 1]
+
+Bypass the attribute encoder and prevent the unavailable attribute representation from contributing to fusion.
+
+Keep its pretrained weights unchanged.
+
+Use a missing-modality token only if required by the existing architecture.
+
+
+STEP 13 — Training protocol
+
+Stage 0: sanity check
+
+Before real training:
+
+- successfully instantiate the original 4G model;
+- load the pretrained checkpoint;
+- verify checkpoint key matching;
+- inspect one 5G batch;
+- resolve all tensor interfaces;
+- run at least one forward pass;
+- print important tensor shapes.
+
+
+Stage 1: main transfer experiment
+
+Train only newly introduced modules:
+
+- 5G categorical tokenizer;
+- 5G numerical tokenizer;
+- input adapter, if required;
+- representation adapter, if required;
+- token resampler, only if required.
+
+Freeze:
+
+- pretrained configuration encoder;
+- pretrained KPI embedding;
+- pretrained KPI encoder;
+- pretrained inter-KPI attention;
+- pretrained cross-attention;
+- pretrained reconstruction head;
+- pretrained attribute encoder.
+
+Use the original masked KPI reconstruction objective.
+
+
+Stage 2: optional parameter-efficient adaptation
+
+Only if Stage 1 is insufficient:
+
+- continue training tokenizer/adapters;
+- optionally add LoRA to the configuration encoder;
+- optionally add LoRA to cross-attention;
+- optionally train LayerNorm affine parameters.
+
+Keep the original pretrained backbone weights frozen.
+
+
+STEP 14 — Preserve the original 4G training pipeline
+
+For everything else, follow the existing 4G training pipeline as closely as possible.
+
+This includes, where applicable:
+
+- IterableDataset behavior;
+- DDP;
+- batching;
+- masking;
+- forward-pass structure;
+- reconstruction loss;
+- optimizer;
+- validation;
+- early stopping;
+- logging;
+- checkpointing;
+- distributed synchronization;
+- random seeds.
+
+Reuse existing classes/functions/utilities instead of reimplementing the whole training pipeline.
+
+
+STEP 15 — Runtime diagnostics
+
+At startup, print/log a concise summary containing:
+
+- whether the 4G checkpoint loaded successfully;
+- matched/missing/unexpected checkpoint keys;
+- categorical feature count;
+- numerical feature count;
+- total configuration token count;
+- tokenizer output shape;
+- configuration encoder input/output shapes;
+- cross-attention Q/K/V shapes;
+- KPI names/order;
+- missing KPI(s);
+- KPI availability mask;
+- whether an input adapter is used;
+- whether a representation adapter is used;
+- whether token resampling is used;
+- number of trainable parameters;
+- number of frozen parameters.
+
+
+IMPORTANT IMPLEMENTATION RULES
+
+- Do not blindly implement example tensor dimensions written in the transfer-plan .md.
+- Resolve implementation-dependent placeholders from the actual code/data.
+- Do not assume a 67→20 mapping.
+- Do not add token resampling unless the original implementation truly requires a fixed token count.
+- Do not replace pretrained modules when a mask or small adapter is sufficient.
+- Do not treat numerical configuration features as categorical.
+- Do not silently change preprocessing/normalization.
+- Do not align KPI channels only by tensor position.
+- Do not unnecessarily redesign the existing 4G training pipeline.
+- Prefer the minimum changes necessary to make the pretrained 4G model work with the 5G data.
+
+Before making major architectural changes, first summarize what you found in the original 4G code and the current 5G dataset, including the resolved tensor interfaces and which adapters are actually necessary.
