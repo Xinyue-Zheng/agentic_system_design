@@ -1,0 +1,53 @@
+I have already implemented and verified the 5G dataset loading pipeline, so each sample now contains the correct data. Please implement the 5G transfer/training pipeline based on the existing 4G implementation.
+
+Before coding, inspect:
+- Existing 4G training/model code: [4G_TRAINING_CODE]
+- Current 5G workspace: [5G_WORKSPACE]
+- LTE→5G transfer plan: [TRANSFER_PLAN_MD]
+- Attached FT-Transformer paper for numerical vs. categorical feature tokenization.
+
+Tasks:
+
+1. Load the original 4G pretrained model.
+   - Reconstruct/initialize the same model architecture used during 4G pretraining.
+   - Load the pretrained weights from:
+     [4G_PRETRAINED_CHECKPOINT]
+   - Verify that the checkpoint weights are correctly loaded before making any 5G-specific modifications.
+   - Preserve and reuse the pretrained components according to the transfer plan.
+
+2. Transfer the loaded 4G pretrained model to the 5G data following [TRANSFER_PLAN_MD].
+   Reuse/freeze the original pretrained components where specified, and introduce new 5G tokenizer/adapters only where necessary.
+
+3. Keep the current 5G dataset loading logic unchanged unless a small modification is required for model input formatting.
+
+4. Complete the tabular preprocessing/tokenization.
+
+   Categorical columns:
+   [CATEGORICAL_COLUMNS_LIST_PATH]
+
+   Numerical columns:
+   [NUMERICAL_COLUMNS_LIST_PATH]
+
+   CSV containing the valid categorical values / mappings for each categorical column:
+   [CATEGORICAL_VALUES_CSV_PATH]
+
+   The current categorical values are still raw values. Convert them into integer category indices before passing them to embedding layers.
+
+5. Unlike the original 4G configuration data, which only used categorical features, the 5G configuration data contains both categorical and numerical features.
+
+   Follow the FT-Transformer-style tokenizer:
+   - categorical feature → category index → feature-specific embedding lookup
+   - numerical feature → scalar value × feature-specific learnable vector
+   - both produce tokens with the same embedding dimension before entering the configuration Transformer/encoder.
+
+6. For all remaining steps, follow the existing 4G training pipeline as closely as possible, including batch handling, masking, forward pass, reconstruction loss, optimizer, DDP/IterableDataset behavior if applicable, validation, checkpointing, and logging.
+
+Before implementing major changes, first inspect the existing 4G code and determine:
+- how the original 4G pretrained model is instantiated and how its checkpoint is loaded;
+- the exact tensor shapes expected by the pretrained configuration encoder and cross-attention;
+- which pretrained weights can be reused directly;
+- which modules need to be newly introduced for 5G;
+- whether the change in feature count requires token-count alignment/resampling;
+- and what changes are required to support the new numerical features.
+
+Prefer minimal modifications. Reuse the existing 4G model classes, training utilities, and pipeline whenever possible instead of reimplementing them.
