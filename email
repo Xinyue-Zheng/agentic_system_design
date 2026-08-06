@@ -1,0 +1,23 @@
+Hi Prof. Wang,
+
+I wanted to give you an update on the resubmission paper and also ask for your feedback on the current experimental plan and manuscript.
+
+In addition to the experiments I am currently working on, I am planning to briefly include the two use cases we previously explored but eventually did not use:
+
+* **Outage prediction:** This case did not converge well. After looking into the data, we found that many outage events also involve neighboring cells being down, which makes the setting less suitable for our original formulation.
+* **Energy estimation:** This case converged successfully, and I have finished most of the baseline experiments. However, its original purpose was to identify energy-spending anomalies. Since our foundation model currently only contains 4G data, this experiment can only perform 4G energy-spending estimation rather than actual anomaly detection. The anomaly labels are at the base-station level and depend on both 4G and 5G information.
+
+Because of this, we decided to focus on transferring the 4G foundation model to 5G. The current experimental plan is:
+
+1. **4G-to-5G transfer:** Add a 5G tokenizer in front of the 4G foundation model and train it on 5G data. I first tried training only the tokenizer while freezing the pretrained model, but it did not converge. I am currently debugging this by opening all layers for fine-tuning and also comparing with training from scratch. I am trying to check convergence within the first few epochs so that I can iterate more quickly.
+
+2. **5G parameter-tuning task:** Apply the original method and all baselines to the 5G parameter-tuning task. I am currently working on the code for this experiment.
+
+3. **Energy-spending anomaly detection:** After the 5G transfer is completed, I plan to use the pretrained 4G and 5G embeddings for anomaly detection. The current design is to use the static embeddings with a small MLP to predict energy spending, and then use the prediction residuals to analyze real anomaly cases. We have around 30 labeled real anomaly cases for evaluation.
+
+For the manuscript, I have already added the anomaly-detection part and the description of the 5G use case. The evaluation section for the 5G experiments still needs to be revised based on the final experimental setup and results.
+
+Could you please take a look at the current direction and let me know if you think this experimental plan is appropriate for the resubmission? I would also appreciate any suggestions on how much of the earlier outage and energy-estimation experiments should be included in the paper.
+
+Best,
+Xinyue
