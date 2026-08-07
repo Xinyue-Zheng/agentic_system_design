@@ -1,0 +1,80 @@
+RAN-NFM Resubmission Revision Plan
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────
+PART 1: EXPERIMENTS
+──────────────────────────────
+
+[E1. 5G Transfer Experiment Group]
+
+Addresses: too few tasks, both throughput-centric (A, B, D); single-provider LTE data only, Section 7's cross-technology generalization claims unsupported (A, B, C, D).
+
+E1.1 — 5G Reconstruction
+Task: Masked KPI reconstruction on 5G data using the 4G-pretrained RAN-NFM-Base, validating cross-technology transferability of the pretrained representation.
+Done: Our method is already running — currently optimizing the reconstruction loss (not unfinished, in active tuning).
+To do: (1) Continue optimizing the loss to reach target quality — prerequisite for E1.3 (produces usable 5G embeddings); (2) run the reconstruction task for the other methods as well, since the anomaly-detection task (E1.3) requires their reconstruction outputs/embeddings for comparison.
+
+E1.2 — RANPerf Fine-tuning on 5G (from the 4G FM)
+Task: Port Task 1 (RANPerf) to 5G data, fine-tuned from the 4G foundation model, compared against multiple baselines.
+Done: XGB-statistics results available; RAN-NFM-Core training complete.
+In progress: RAN-NFM-Core performance improvement + test results; NetLLM training.
+Not done: RAN-NFM-Pro (no training needed, only embeddings, waiting on upstream runs); two more baselines still being implemented.
+To do: Complete Core test, Pro embeddings, NetLLM, and the two baselines to form the full comparison table.
+
+E1.3 — 5G Energy Anomaly Detection
+Task: A new downstream task built on the 5G embeddings, qualitatively different from classification/regression throughput prediction — addressing both task diversity and cross-technology generalization at once (exactly the "qualitatively different task" Reviewer D asks for).
+Done: —
+Not done: to run.
+To do: Start after parameter tuning is complete and E1.1 reconstruction reaches target quality (usable 5G embeddings available, for our method and the comparison methods).
+
+[E2. Energy-Spend Prediction]
+
+Addresses: task diversity (A, B, D); also serves as the backup if E1 does not work out.
+
+Task: A new task with a non-throughput target variable, independently expanding the task scope.
+Done: Training fully complete.
+Not done: Test results not yet produced.
+To do: Produce test results; regardless of E1's outcome, include in the main text or appendix if the results are good.
+
+[E3. Optional Small Experiments (time-permitting)]
+
+E3.1 Add CIs / significance testing to the RANPerf field-study results — re-analysis of existing field data, no new deployment (for A).
+E3.2 Cross-attention direction ablation (swap query/key) (for A, D).
+E3.3 TPB-TTMs adaptation / re-tuning and explanation of the 0.0439 AUPRC (for A).
+E3.4 Configuration-variable feature importance / light ablation, informed by the field study's actual changes (for E).
+E3.5 Comparison against simpler fusion (concat + MLP) (for D).
+Note: None started; choose based on remaining time; give textual justification in the paper for any not run.
+
+──────────────────────────────
+PART 2: WRITING
+──────────────────────────────
+
+W1 — Section 3 (Design)
+Addresses: design justification hard to see, prose rough (A's design questions, D's "what is RAN-specific").
+How: Rephrase only, no structural content change — add more formulas and follow ML-paper writing conventions (symbolic definitions of inputs/outputs, module transformations, loss functions), making the design description more precise and rigorous. The justifications reviewers question (e.g., why only masked KPI reconstruction) already exist in the Discussion.
+
+W2 — Novelty Presentation
+Addresses: read as "an assembly of existing techniques" (B, C, D). The content is already in the paper; this is a visibility issue.
+How: Strengthen in the Introduction and the Discussion — reword the Intro contribution list from "what we did" to "what RAN-specific problem it solves," explicitly positioning the contribution at the systems/domain level; consolidate and sharpen the novelty argument in the Discussion.
+
+W3 — LLM-Branch Contradiction + Core/Pro Boundary
+Addresses: the apparent contradiction between the LLM branch and "LLMs perform poorly on regression" (A, B, D); Pro's operating scenario and cost/benefit (D, also covering C's compute concern).
+How: Clarify the contradiction in the Discussion — "poor LLM-only numerical regression ≠ useless LLM features as an auxiliary branch"; the LLM branch provides semantic representation enhancement while numerical prediction remains with the dedicated head. Emphasize the Core/Pro usage boundary in the experiment section — using the 168x memory figures to state when Core suffices and when Pro is worth it.
+
+W4 — RAN Operational Background
+Addresses: B's (and similarly D's) "unclear problem formulation" — the paper lacks operational grounding for RAN management: what task types exist day-to-day, how decision-making works, and which data modalities are involved, so readers cannot judge whether the model design targets real operational needs (what is asked for is operational background, not mathematical formalization).
+How: No new section — expand the existing background in Sections 2 and 4. In Section 2, add a structured overview of typical RAN workflows, decision processes, and data modalities, and front-load here the motivation for why a pure LLM or a generic time-series FM would not suffice; in Section 4, add the corresponding operational context at each use case, anchoring the task definitions in real decision workflows.
+
+W5 — Absolute-Performance Discussion
+Addresses: low absolute AUPRC 0.286 / F1 0.318, missing performance-ceiling discussion (A).
+How: Reinforce at Use Case 1 (RANPerf) in Section 4 — state the inherently very low positive-class ratio, the rationale for the 30% threshold, missing information (neighboring-cell interference, mobility, spectrum) bounding the ceiling, and imbalance handling during training; establish that the low absolute numbers reflect task difficulty, not model weakness.
+
+W6 — Field Deployment Section
+Addresses: badly under-specified field study (E's central question), missing statistical treatment (A), EngSav reporting only MAD (A).
+How: Rewrite the field deployment section — clearly state the nature of the deployment (whether production configurations were actually changed with measured outcomes, region, number of variables changed, duration); for EngSav, explain why MAD is used and the availability of actual energy-savings data; fold in the CI/significance results if E3.1 is run.
+
+──────────────────────────────
+PART 3: SCOPED OUT
+──────────────────────────────
+
+No comparison with control-theory / DRL methods (C) — scope it in the paper: this work sits at the prediction/profiling layer; DRL/control-theoretic methods operate at the decision layer and are complementary (the model's outputs can feed them), hence no direct comparison.
