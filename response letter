@@ -1,0 +1,931 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{hyperref}
+
+% =========================================================
+% IMPORTANT:
+% Copy the exact definition of \addrev{} from the manuscript here
+% if the response letter is compiled separately.
+% Example only:
+% \newcommand{\addrev}[1]{\textcolor{blue}{#1}}
+% =========================================================
+
+\newcommand{\reviewcomment}[1]{%
+    \noindent\textbf{Comment:} \textit{#1}\par
+}
+
+\newcommand{\response}[1]{%
+    \noindent\textbf{Response:} #1\par
+}
+
+\newcommand{\revision}[1]{%
+    \noindent\textbf{Revision in the manuscript:} #1\par
+}
+
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Response to Prior Reviews}
+\end{center}
+
+We sincerely thank the reviewers for their careful reading and
+constructive feedback. We have substantially revised the manuscript
+to address the concerns raised in the previous review round.
+The major changes include adding a new non-throughput-centric
+downstream task, clarifying the RAN-specific motivation and design
+rationale of RAN-NFM, strengthening the explanation of the LLM-based
+branch, and clarifying several modeling and evaluation choices.
+Below, we respond to each comment in detail.
+
+% =========================================================
+% Reviewer A
+% =========================================================
+
+\section*{Response to Reviewer 240A}
+
+% ---------------------------------------------------------
+\subsection*{A1. Diversity of downstream tasks}
+
+\reviewcomment{
+RAN-NFM is evaluated on only two downstream tasks, both of which
+predict throughput. This is insufficient to support the claim of
+``a wide range of downstream tasks.''
+}
+
+\response{
+We agree that the original two use cases provided limited evidence
+of reuse beyond throughput-centric prediction. To address this concern,
+we add a third downstream use case, \textbf{EnergyEst}, which predicts
+energy consumption at the 4G eNodeB level. This task is qualitatively
+different from the original throughput-related use cases in both its
+prediction target and network granularity. Its ground-truth energy
+consumption is obtained from historical measurements collected from
+the operational network.
+
+The revised evaluation therefore covers three downstream RAN tasks,
+including classification and regression tasks with different targets
+and network granularities. We also revise the corresponding claims
+throughout the manuscript to avoid implying generalization beyond the
+scope demonstrated by our experiments.
+}
+
+\revision{
+We add the EnergyEst use case in Sec.~\ref{sec:XXX} and update the
+Introduction, contributions, and evaluation overview accordingly.
+
+% Paste the exact revised manuscript text here.
+\begin{quote}
+\addrev{
+% Paste the EnergyEst paragraph from the manuscript here.
+}
+\end{quote}
+}
+
+% ---------------------------------------------------------
+\subsection*{A2. Generalization across RAN technologies and providers}
+
+\reviewcomment{
+The evaluation uses data from a single LTE provider, while the
+manuscript discusses adaptation to 5G SA, future 6G, and different
+service providers without experimental evidence.
+}
+
+\response{
+We agree that experimentally demonstrated task adaptation should be
+clearly distinguished from potential cross-technology and cross-provider
+extensions. The revised manuscript therefore scopes these statements
+more carefully and does not present cross-provider or future-RAT
+generalization as an experimentally established capability of the
+current system.
+}
+
+\revision{
+We revise Sec.~\ref{sec:XXX} to clearly distinguish the generalization
+demonstrated by our evaluation from future cross-RAT and cross-provider
+adaptation.
+
+\begin{quote}
+\addrev{
+% Paste the revised cross-RAT/provider statement here.
+}
+\end{quote}
+}
+
+% ---------------------------------------------------------
+\subsection*{A3. Absolute performance on RANPerf}
+
+\reviewcomment{
+The best AUPRC and F1 scores on RANPerf are relatively low in absolute
+terms. The manuscript should discuss whether the model is sufficiently
+accurate for production use and what limits its performance.
+}
+
+\response{
+We agree that the absolute performance should be interpreted in the
+context of the difficulty of the task. RANPerf is highly imbalanced,
+with positive samples accounting for only XX\% of the evaluated data.
+The model must identify a rare subset of configuration changes that
+produce the target performance improvement, which contributes to the
+modest absolute AUPRC and F1 values.
+
+We have added this context to the revised manuscript. Our conclusions
+focus on the consistent improvement over the production baseline under
+the same data distribution rather than suggesting that the prediction
+problem is fully solved.
+}
+
+\revision{
+We add the positive-class ratio and discuss its impact on the absolute
+RANPerf performance in Sec.~\ref{sec:XXX}.
+
+\begin{quote}
+\addrev{
+% Paste your finalized RANPerf imbalance paragraph here.
+}
+\end{quote}
+}
+
+% ---------------------------------------------------------
+\subsection*{A4. Role of the LLM branch}
+
+\reviewcomment{
+The manuscript argues that LLM-only adaptation performs poorly on
+regression-based time-series forecasting, yet RAN-NFM-Pro, which
+incorporates an LLM branch, consistently outperforms RAN-NFM-Core.
+The role of the LLM branch should be clarified.
+}
+
+\response{
+We agree that the original presentation did not clearly distinguish
+LLM-only prediction from the role of the LLM within RAN-NFM-Pro.
+The LLM branch in Pro does not replace the RAN-specific representations
+learned from structured operational data. Instead, it provides
+complementary semantic and contextual representations that are fused
+with the RAN-specific representation.
+
+Our results therefore suggest that, for the RAN tasks considered in
+this work, LLM-derived representations are more effective as
+complementary features than as the sole representation for quantitative
+prediction. We also clarify the Core--Pro tradeoff: Core targets
+efficiency- and resource-sensitive settings, whereas Pro targets
+accuracy-first settings where additional computation and memory
+overhead are acceptable.
+}
+
+\revision{
+We revise the Introduction, Sec.~\ref{sec:XXX}, and the Discussion to
+clarify the role of the LLM branch and the Core--Pro cost--accuracy
+tradeoff.
+
+\begin{quote}
+\addrev{
+% Paste the key LLM clarification from the manuscript here.
+}
+\end{quote}
+}
+
+% ---------------------------------------------------------
+\subsection*{A5. Field-deployment evaluation}
+
+\reviewcomment{
+The field deployment lacks confidence intervals/significance testing,
+and the EngSav deployment metric measures divergence from the previous
+policy rather than actual energy savings or throughput impact.
+}
+
+\response{
+% TODO:
+% Complete this response once the exact deployment procedure and
+% information that can be disclosed are confirmed.
+}
+
+\revision{
+% TODO
+}
+
+% ---------------------------------------------------------
+\subsection*{A6. Direction of cross-modal attention}
+
+\reviewcomment{
+Why does the cross-attention design use the time-series representation
+as the query and the tabular representation as the key/value?
+}
+
+\response{
+We clarify that the fused representation is intended to characterize
+runtime RAN behavior. KPI representations therefore serve as queries,
+while RAN properties provide contextual information that conditions
+such behavior. This direction is also aligned with our self-supervised
+pretraining objective, which learns representations of RAN behavior
+through KPI reconstruction conditioned on RAN properties.
+}
+
+\revision{
+We add this rationale in Sec.~\ref{sec:XXX}.
+
+\begin{quote}
+\addrev{
+% Paste your finalized cross-attention explanation here.
+}
+\end{quote}
+}
+
+% ---------------------------------------------------------
+\subsection*{A7. Generic time-series models and baseline adaptation}
+
+\reviewcomment{
+The very low performance of TPB-TTMs may reflect an adaptation or
+configuration issue. Please report how these models were adapted and
+whether hyperparameter search was conducted. The evaluation also does
+not include Chronos or TimesFM.
+}
+
+\response{
+We agree that the performance of these baselines should be interpreted
+within the evaluated adaptation setting rather than as evidence that
+generic time-series encoders are fundamentally incapable of supporting
+RAN tasks.
+
+% TODO:
+% Add the exact adaptation/tuning protocol here.
+%
+% Example:
+% We used XXX for hyperparameter selection and applied the same
+% training/validation protocol as XXX.
+
+We have revised the corresponding discussion to scope our conclusions
+to the models and adaptation procedures evaluated in this work.
+
+% TODO:
+% Add one sentence addressing Chronos/TimesFM depending on what you
+% decide to claim in the paper.
+}
+
+\revision{
+We clarify the baseline training/adaptation setting in
+Sec.~\ref{sec:XXX} and revise the corresponding conclusion.
+}
+
+% ---------------------------------------------------------
+\subsection*{A8. Multi-task learning baseline}
+
+\reviewcomment{
+The evaluation does not compare against a traditional multi-task
+learning approach that shares a backbone and jointly trains multiple
+task heads.
+}
+
+\response{
+% TODO:
+% We need to decide the final scope response here.
+%
+% Possible direction:
+% RAN-NFM focuses on reusable pretraining followed by independent
+% downstream adaptation, whereas conventional multi-task learning
+% assumes simultaneous availability of task-specific labeled data.
+% Avoid claiming superiority unless experimentally evaluated.
+}
+
+% ---------------------------------------------------------
+\subsection*{A9. Temporal distribution shift and model staleness}
+
+\reviewcomment{
+How does the model handle temporal distribution shift as RAN
+configurations and traffic patterns evolve? Has model staleness been
+analyzed?
+}
+
+\response{
+We agree that temporal distribution shift is an important consideration
+for operational RAN models. The current study evaluates the framework
+using large-scale historical operational data but does not independently
+quantify performance under controlled long-term distribution shifts.
+We therefore avoid making claims regarding explicit robustness to
+model staleness and identify temporal-shift evaluation and periodic
+model adaptation as important future work.
+}
+
+\revision{
+% If you add a limitation sentence to Discussion, paste it here.
+% Otherwise this can simply say:
+We clarify this limitation in the revised Discussion.
+}
+
+% ---------------------------------------------------------
+\subsection*{A10. Positive-class imbalance in RANPerf}
+
+\reviewcomment{
+What is the positive-class ratio for RANPerf, and how is the imbalance
+handled during training?
+}
+
+\response{
+The positive-class ratio is XX\%. We now explicitly report this ratio
+and clarify the corresponding training/evaluation setup.
+
+% TODO:
+% Add exactly what you did during training:
+% class weighting / sampling / no special treatment / etc.
+}
+
+\revision{
+See the revised RANPerf description in Sec.~\ref{sec:XXX}.
+}
+
+% ---------------------------------------------------------
+\subsection*{A11. Ground truth and potential selection bias in EngSav}
+
+\reviewcomment{
+How are the ground-truth labels for EngSav obtained? If only sectors
+that have historically entered sleeping mode are included, this may
+introduce selection bias.
+}
+
+\response{
+% TODO:
+% This needs to match your exact EngSav dataset construction.
+% Do not guess here.
+}
+
+\revision{
+% TODO
+}
+
+% ---------------------------------------------------------
+\subsection*{A12. Why only KPI reconstruction during pretraining?}
+
+\reviewcomment{
+Why is pretraining limited to masked time-series reconstruction?
+Did you consider reconstruction of tabular features or contrastive
+objectives?
+}
+
+\response{
+Our pretraining objective is designed to learn reusable representations
+of RAN operational behavior. KPI time series directly reflect the
+dynamic network behavior resulting from RAN properties and operating
+conditions. Configuration parameters, in contrast, are largely
+operator-defined settings and do not exhibit the same natural temporal
+dynamics. We therefore use KPI reconstruction to align the
+self-supervised objective with the behavior-modeling goal of RAN-NFM.
+
+% If you did not run contrastive learning:
+We did not aim to exhaustively compare alternative self-supervised
+objectives in the current study, and we have revised the manuscript
+to clarify the motivation and scope of the selected objective.
+}
+
+\revision{
+We add the rationale for KPI-oriented reconstruction in
+Sec.~\ref{sec:XXX}.
+
+\begin{quote}
+\addrev{
+% Paste your finalized KPI reconstruction explanation here.
+}
+\end{quote}
+}
+
+% ---------------------------------------------------------
+\subsection*{A13. Minor and editorial comments}
+
+\reviewcomment{
+The reviewer identified several presentation inconsistencies and
+typographical issues, including duplicated baseline descriptions,
+duplicated feature entries, terminology errors, and a feature-count
+inconsistency.
+}
+
+\response{
+We thank the reviewer for identifying these issues. We have corrected
+them in the revised manuscript.
+}
+
+\revision{
+Specifically, we:
+\begin{itemize}[leftmargin=2em]
+    \item corrected ``This task is build on top'' to
+          ``This task is built on top'';
+    \item removed the duplicated StatF-MLP baseline description;
+    \item corrected the duplicated configuration-feature entry in Table~5;
+    \item corrected ``multi-model'' to ``multi-modal'';
+    \item corrected ``adaption'' to ``adaptation'';
+    \item corrected the feature-count inconsistency between the text
+          and Table~5.
+\end{itemize}
+}
+
+
+% =========================================================
+% Reviewer B
+% =========================================================
+
+\section*{Response to Reviewer 240B}
+
+% ---------------------------------------------------------
+\subsection*{B1. Limited downstream generalizability}
+
+\reviewcomment{
+The evaluation contains only two use cases, making it unclear whether
+the foundation model can support multiple downstream applications.
+}
+
+\response{
+We agree and address this concern by adding the EnergyEst use case
+described in Response A1. EnergyEst predicts 4G eNodeB-level energy
+consumption and therefore extends the evaluation beyond the two
+throughput-centric tasks in the original manuscript.
+}
+
+\revision{
+Please see the new EnergyEst evaluation in Sec.~\ref{sec:XXX} and the
+revised Introduction and contribution summary.
+}
+
+% ---------------------------------------------------------
+\subsection*{B2. Motivation for a RAN-specific foundation model}
+
+\reviewcomment{
+The motivation should better explain why a RAN-specific foundation
+model is needed, including why general-purpose LLM and time-series
+foundation models may not directly address the RAN setting.
+}
+
+\response{
+We have revised the motivation to more clearly identify the properties
+of operational RAN data that drive our design. RAN state and behavior
+are represented through heterogeneous modalities with different
+structures, while these modalities provide complementary and
+interdependent views of the same network behavior. This creates a need
+to preserve modality-specific structure while explicitly modeling
+cross-modal relationships.
+
+Our contribution does not rely on claiming that general-purpose LLMs
+or time-series models can never support RAN tasks. Rather, RAN-NFM is
+designed to directly exploit these RAN-specific data characteristics.
+}
+
+\revision{
+We strengthen the motivation in the Introduction and problem
+formulation.
+
+\begin{quote}
+\addrev{
+% Paste the relevant revised Introduction sentences here.
+}
+\end{quote}
+}
+
+% ---------------------------------------------------------
+\subsection*{B3. Problem formulation and RAN management context}
+
+\reviewcomment{
+The problem formulation does not clearly delineate RAN management
+tasks, workflows, decision-making processes, and data modalities,
+making it difficult to assess whether the design matches operational
+requirements.
+}
+
+\response{
+We agree that the original formulation did not sufficiently emphasize
+the RAN-specific problem context. We revise the problem formulation to
+more clearly describe how heterogeneous operational data characterize
+RAN state and behavior and how downstream RAN tasks may differ in
+prediction objective and network granularity. This provides the
+problem-side motivation for the multimodal representation-learning
+framework introduced later in the paper.
+}
+
+\revision{
+We revise Sec.~\ref{sec:XXX} to strengthen the RAN-specific problem
+formulation.
+
+\begin{quote}
+\addrev{
+% Paste the corresponding problem-statement revision here.
+}
+\end{quote}
+}
+
+% ---------------------------------------------------------
+\subsection*{B4. Technical contribution and use of existing components}
+
+\reviewcomment{
+Most architectural components are adopted from prior work, making the
+paper appear to be an engineering-driven integration with limited
+technical contribution.
+}
+
+\response{
+We agree that RAN-NFM does not aim to introduce a new general-purpose
+ML architecture, and we have revised the paper to make this positioning
+clearer. The contribution lies in an engineering-driven RAN-specific
+system design whose architectural choices are grounded in the
+characteristics of operational RAN data.
+
+In particular, the framework combines modality-specific representation
+learning, cross-modal modeling, and RAN-oriented self-supervised
+pretraining to capture relationships between RAN properties and runtime
+behavior. We have strengthened the explanation of how each design
+choice follows from the characteristics of the underlying RAN data,
+rather than attributing novelty to the individual encoder architectures.
+}
+
+\revision{
+We revise the Introduction and Sec.~\ref{sec:XXX} to clarify this
+positioning and strengthen the design rationale.
+
+\begin{quote}
+\addrev{
+% Paste the strongest novelty/design-rationale text here.
+}
+\end{quote}
+}
+
+% ---------------------------------------------------------
+\subsection*{B5. Role and necessity of the LLM branch}
+
+\reviewcomment{
+The role and necessity of the LLM-based adaptation branch are unclear,
+including why it improves representation learning.
+}
+
+\response{
+Please see Response A4. We clarify that the LLM branch provides
+complementary semantic and contextual representations rather than
+replacing the RAN-specific representation. We also clarify the intended
+Core--Pro cost--accuracy tradeoff.
+}
+
+\revision{
+See Sec.~\ref{sec:XXX} and the revised Discussion.
+}
+
+% ---------------------------------------------------------
+\subsection*{B6. Evaluation organization and figure readability}
+
+\reviewcomment{
+Several figures are difficult to read, and the evaluation section would
+benefit from an introductory overview explaining the purpose of each
+experimental component.
+}
+
+\response{
+We have revised the presentation of the evaluation and figures to make
+the results easier to interpret.
+
+% TODO:
+% State the exact figure changes and whether you added an evaluation
+% overview paragraph.
+}
+
+\revision{
+% TODO: list concrete revisions.
+}
+
+% ---------------------------------------------------------
+\subsection*{B7. Dataset insight and reproducibility}
+
+\reviewcomment{
+The real-world dataset is a strength, but the paper provides limited
+insight into its unique challenges, and the dataset is not publicly
+available for reproducibility.
+}
+
+\response{
+The dataset contains operational information from a commercial cellular
+network and cannot be publicly released due to provider confidentiality
+and privacy constraints. We have strengthened the discussion of the
+RAN-specific data characteristics that motivate the framework.
+
+% TODO:
+% If the manuscript states additional reproducibility artifacts
+% (code, synthetic data, configuration details, etc.), add them here.
+}
+
+\revision{
+% Add manuscript location if changed.
+}
+
+
+% =========================================================
+% Reviewer C
+% =========================================================
+
+\section*{Response to Reviewer 240C}
+
+% ---------------------------------------------------------
+\subsection*{C1. Novelty based on existing ML architectures}
+
+\reviewcomment{
+The core technical contributions primarily adapt existing architectures
+such as SAINT, PatchTST, and LoRA, so the novelty appears to lie mainly
+in system integration.
+}
+
+\response{
+We agree that the individual backbone architectures are established.
+We therefore revise the manuscript to avoid presenting these components
+themselves as new ML architectures. As discussed in Response B4, the
+contribution is the RAN-specific representation-learning and system
+design, where the architecture and training choices are motivated by
+the structure and relationships of operational RAN data.
+}
+
+\revision{
+See the revised Introduction and Sec.~\ref{sec:XXX}.
+}
+
+% ---------------------------------------------------------
+\subsection*{C2. Control-theoretic and DRL baselines}
+
+\reviewcomment{
+The evaluation does not compare against other classes of RAN management
+methods, such as control-theoretic solutions or deep-RL-based RAN
+optimization.
+}
+
+\response{
+These approaches generally solve specific closed-loop control or
+optimization problems, whereas RAN-NFM focuses on learning reusable
+representations for RAN behavior prediction that can be adapted to
+different downstream tasks. A direct comparison would therefore require
+aligning the task objectives, action spaces, and control interfaces.
+
+We agree that using the learned RAN-NFM representation within
+control- or RL-based decision systems is an interesting future
+direction, but we do not claim experimental superiority over these
+systems in the current work.
+}
+
+% ---------------------------------------------------------
+\subsection*{C3. Computational requirements}
+
+\reviewcomment{
+RAN-NFM requires significant computing resources.
+}
+
+\response{
+We agree that computational cost is an important practical consideration.
+This is one motivation for providing two adaptation variants. Core
+targets efficiency-sensitive settings and substantially reduces the
+computational/memory overhead, while Pro targets accuracy-first settings
+where the additional overhead of the LLM branch is acceptable.
+}
+
+\revision{
+We strengthen the Core--Pro cost--accuracy discussion in
+Sec.~\ref{sec:XXX}.
+}
+
+% ---------------------------------------------------------
+\subsection*{C4. Robustness and generalizability}
+
+\reviewcomment{
+The paper does not evaluate robustness as network conditions evolve or
+sensitivity to noisy/missing KPI measurements.
+}
+
+\response{
+We agree that controlled evaluation of temporal shift and missing/noisy
+KPI measurements would further strengthen the operational robustness
+analysis. The current evaluation uses real historical operational data
+with naturally occurring variability, but it does not independently
+quantify these specific perturbations. We therefore scope our claims
+accordingly and identify explicit robustness analysis as future work.
+}
+
+\revision{
+% Paste limitation sentence if added.
+}
+
+
+% =========================================================
+% Reviewer D
+% =========================================================
+
+\section*{Response to Reviewer 240D}
+
+% ---------------------------------------------------------
+\subsection*{D1. Limited task generalization}
+
+\reviewcomment{
+The two original use cases are both throughput-centric, making it
+difficult to demonstrate transfer beyond a narrow family of KPI
+prediction problems.
+}
+
+\response{
+Please see Response A1. We add EnergyEst, a qualitatively different
+eNodeB-level energy-consumption regression task, and revise the
+generalization claims accordingly.
+}
+
+% ---------------------------------------------------------
+\subsection*{D2. Unique challenges in RAN management}
+
+\reviewcomment{
+The FM + fine-tuning approach is general, and the paper does not clearly
+explain what unique RAN challenges motivate the proposed design.
+}
+
+\response{
+We address this concern by strengthening the RAN-specific problem
+motivation and directly linking it to the model design. Operational RAN
+state is represented through heterogeneous modalities with different
+structures and semantics, while these modalities are interdependent
+views of network behavior. The revised manuscript makes these properties
+explicit and explains how they motivate modality-specific encoders,
+cross-modal fusion, and the behavior-oriented pretraining objective.
+}
+
+\revision{
+See the revised Introduction, problem formulation, and Sec.~\ref{sec:XXX}.
+}
+
+% ---------------------------------------------------------
+\subsection*{D3. Operating scenario and cost/benefit of Pro}
+
+\reviewcomment{
+What is the concrete operating scenario for Pro? When is its additional
+cost justified, and when is Core insufficient?
+}
+
+\response{
+We now explicitly position Core and Pro as two operating points along
+a cost--accuracy tradeoff. Core targets resource- and cost-sensitive
+settings, whereas Pro targets accuracy-first applications where the
+additional compute and memory overhead of the LLM branch is acceptable.
+
+% TODO:
+% If the manuscript contains concrete retraining cadence / serving
+% architecture, add it here. Do not invent it if it does not.
+}
+
+\revision{
+We clarify the intended use of the two variants in Sec.~\ref{sec:XXX}
+and the Discussion.
+}
+
+% ---------------------------------------------------------
+\subsection*{D4. RAN-specific motivation for cross-attention}
+
+\reviewcomment{
+Cross-attention is common in multimodal models. What RAN-specific
+property makes it useful here, and why not use simpler fusion?
+}
+
+\response{
+The motivation for cross-modal fusion in RAN-NFM arises from the
+interdependence between network properties and runtime KPI behavior.
+Configuration and other RAN properties provide the context under which
+KPI dynamics are generated, while the prediction representation is
+intended to characterize runtime behavior. Cross-attention provides a
+mechanism for conditioning the behavioral representation on the
+relevant property representation.
+
+We have strengthened this RAN-specific rationale in the revised
+manuscript without claiming that cross-attention itself is a new
+architecture.
+}
+
+\revision{
+See the revised cross-modal fusion discussion in Sec.~\ref{sec:XXX}.
+}
+
+% ---------------------------------------------------------
+\subsection*{D5. Data quality, imbalance, and noise}
+
+\reviewcomment{
+The paper identifies data quality and imbalance as RAN challenges, but
+the solutions appear generic. What specific issues occur in the dataset
+and what mechanisms address them?
+}
+
+\response{
+We have made the treatment of class imbalance more explicit for RANPerf,
+including reporting its positive-class ratio and discussing the
+corresponding absolute AUPRC/F1 performance.
+
+Controlled robustness evaluation for missing/noisy KPIs and explicit
+distribution shifts is not included in the current study, and we avoid
+claiming otherwise. We identify these as important directions for
+future robustness evaluation.
+}
+
+\revision{
+See the revised RANPerf discussion and Sec.~\ref{sec:XXX}.
+}
+
+
+% =========================================================
+% Reviewer E
+% =========================================================
+
+\section*{Response to Reviewer 240E}
+
+% ---------------------------------------------------------
+\subsection*{E1. Importance of individual configuration variables}
+
+\reviewcomment{
+A small number of configuration variables may account for most of the
+model's benefit. An ablation over configuration variables would help
+establish whether the full model is necessary and explain why these
+variables were selected.
+}
+
+\response{
+We agree that configuration-level attribution would provide additional
+interpretability and could identify opportunities for further model
+simplification. The current work focuses on learning a reusable
+representation from the operational feature set selected using RAN
+domain knowledge rather than identifying the minimum predictive subset
+of configuration parameters.
+
+% TODO:
+% If you have added any additional explanation of feature selection,
+% put it here.
+%
+% If no new feature ablation was performed, do not imply that it was.
+We therefore clarify the scope of the current evaluation and regard a
+systematic configuration-variable attribution/ablation analysis as an
+important follow-up study.
+}
+
+\revision{
+% Add manuscript location if you changed feature-selection explanation
+% or Discussion.
+}
+
+% ---------------------------------------------------------
+\subsection*{E2. Field-study methodology}
+
+\reviewcomment{
+The field study is underspecified. It is unclear whether the system
+actually changes production configurations and observes measured
+effects, or merely performs predictions using production-network data.
+}
+
+\response{
+% TODO:
+% Complete once the exact deployment workflow is available.
+}
+
+\revision{
+% TODO
+}
+
+% ---------------------------------------------------------
+\subsection*{E3. Figure readability}
+
+\reviewcomment{
+Several figures, including Fig.~6(b) and Fig.~7, are difficult to
+interpret and do not make the magnitude of the improvement clear.
+}
+
+\response{
+We agree and have revised the affected figures and their accompanying
+descriptions to make the performance differences clearer.
+
+% TODO:
+% e.g.,
+% - revised relative-error CDF;
+% - changed axis scale;
+% - enlarged labels;
+% - moved secondary figures to appendix.
+}
+
+\revision{
+% List the exact figure changes here.
+}
+
+% ---------------------------------------------------------
+\subsection*{E4. Repeated sentence}
+
+\reviewcomment{
+The sentence describing the single-modality generic encoders is repeated.
+}
+
+\response{
+Thank you for pointing this out. We have removed the duplicated sentence
+from the revised manuscript.
+}
+
+
+% =========================================================
+% Closing
+% =========================================================
+
+\vspace{1em}
+
+We again thank the reviewers for their detailed and constructive
+feedback. We believe that the revised manuscript substantially broadens
+the evaluation, more clearly establishes the RAN-specific motivation
+and design rationale, and provides a more precise characterization of
+the capabilities and limitations of RAN-NFM.
+
+\end{document}
