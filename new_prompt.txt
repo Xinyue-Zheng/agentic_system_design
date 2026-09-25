@@ -1,0 +1,83 @@
+Convert my existing manual outage investigation into a structured trace, steps, and investigation states.
+
+Inputs:
+- Jupyter notebook: [NOTEBOOK_PATH]
+- Directory containing saved outputs, including images: [OUTPUT_DIRECTORY]
+- Directory for the new records: [DESTINATION_DIRECTORY]
+
+This investigation was performed manually, step by step, in the notebook. Many outputs are images saved in the output directory. Use the notebook and existing outputs to reconstruct the investigation. Keep the data and generated records inside the current environment.
+
+1. Scope
+
+Complete the conversion of this existing case only. Do not start another case, rerun the notebook, query new data, or implement an agent loop, retrieval, stopping rules, or checkpoint recovery.
+
+Use the existing project language, dependencies, and storage conventions. Preserve the original notebook and output files. Do not introduce manifests, checksums, or file-verification steps.
+
+2. Trace and step definitions
+
+A trace represents the complete investigation of one outage case, from its recorded inputs to its recorded final outputs.
+
+A step represents one meaningful investigation or calculation action. A step does not necessarily correspond to one notebook cell. Group related cells when they implement one action. Split multiple actions only when the available records support that separation. Do not invent individual tool calls from a grouped operation.
+
+Record the source cells for each step, including their zero-based cell indices and available execution counts. Explain the basis for the reconstructed order. Cell order, execution counts, and file timestamps must not individually be treated as conclusive proof of the original execution order. Record unresolved ordering ambiguities.
+
+3. Step contents
+
+For each step, record:
+- Step ID and a short description.
+- Source notebook cells and associated output references.
+- State before the action.
+- The action, including function or tool name and arguments where available.
+- The resulting observations and output artifacts.
+- Explicitly recorded manual notes or reasons.
+- State after the action.
+
+Extract arguments from existing code or records. If a runtime variable value was not saved, preserve the expression and mark its resolved value as unavailable.
+
+Mark this as a manual investigation reconstructed from a notebook. Do not create historical LLM inputs, outputs, plans, or decision reasons that were never recorded. Keep any retrospective explanation separate from original manual notes.
+
+4. State contents
+
+Each state must describe the information available at that point in the reconstructed investigation. Include, when supported by the sources:
+- Case inputs, such as the down cell ID, outage time, and objective.
+- Available geographic information, including investigation regions, land use, settlements, and roads.
+- Available coverage evidence and its geographic scope.
+- Query progress, including queried regions and explicitly recorded exclusions.
+- Available traffic, backup-cell KPI, and analysis results.
+- Recorded tentative interpretations and unresolved questions.
+
+Build states incrementally. State before a step must not contain that step’s results or later findings.
+
+Keep observed data, calculated results, and tentative interpretations distinguishable. A missing historical record does not mean that the information was unavailable during the original investigation. It also does not mean “not queried,” “no coverage,” or zero.
+
+Use null for values that cannot be recovered and explain the missing information. Preserve large results through readable references rather than duplicating them in every state.
+
+5. Images and other outputs
+
+Associate images with steps using notebook outputs, explicit save paths, captions, and other available evidence. Do not force an association when it is ambiguous.
+
+Preserve references to the original image files. If image inspection is available, describe clearly visible findings and label those descriptions as retrospective annotations. Copy numerical values only when they are explicitly readable; do not infer precise coordinates, RSRP values, grid records, or query geometry from plot pixels.
+
+If an image cannot be inspected or confidently associated with a step, keep its reference and describe the limitation. Do not assume that a currently saved image preserves an earlier version of an overwritten output.
+
+6. Deliverables
+
+Create:
+- `manual_outage_trace.json`: one structured case record containing trace metadata, task inputs, ordered steps, state snapshots, final output references, and unresolved items.
+- `manual_outage_trace_notes.md`: a concise explanation of the schema, reconstructed sequence, image associations, and information that needs my review.
+
+Use state IDs so that a step’s state after can also serve as the next step’s state before without duplicating the same snapshot. Keep source references for recorded findings.
+
+Write explanatory text in English and preserve original source notes where needed. These records will support a later context-comparison experiment; they should not be described as executable checkpoints or a fully replayable dataset unless the source records actually support that claim.
+
+Complete all unambiguous parts and list remaining gaps for my review. Do not fill gaps with invented data or retrospective assumptions presented as historical facts.
+
+Use the attached `manual_outage_trace_template.json` as the starting structure and follow `manual_outage_trace_template_guide.md` when filling it.
+
+Keep the field names and add as many steps and state snapshots as the notebook requires. The template contains one step and two states only to demonstrate their relationship; it does not describe the actual number of steps.
+
+Replace placeholders with information supported by the notebook and saved outputs. Keep each state snapshot once and reference it from the relevant steps. Preserve image references and distinguish original manual notes from retrospective descriptions.
+
+Save the completed record as `manual_outage_trace.json`. Record missing or ambiguous information in `unresolved_items` rather than inventing values.
+
+
