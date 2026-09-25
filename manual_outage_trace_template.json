@@ -1,0 +1,87 @@
+{
+  "trace_id": "<TRACE_ID>",
+  "execution_type": "manual",
+  "record_source": "retrospective_notebook",
+  "source": {
+    "notebook_path": "<NOTEBOOK_PATH>",
+    "output_directory": "<OUTPUT_DIRECTORY>",
+    "ordering_basis": null
+  },
+  "task": {
+    "down_cell_id": null,
+    "outage_time": null,
+    "objective": null
+  },
+  "states": [
+    {
+      "state_id": "state_000",
+      "available_result_ids": [],
+      "geographic_context": {
+        "area_type": null,
+        "investigation_region": null,
+        "land_use_result_ids": null
+      },
+      "query_progress": null,
+      "findings": null,
+      "tentative_interpretations": null,
+      "open_questions": null
+    },
+    {
+      "state_id": "state_001",
+      "available_result_ids": [
+        "result_001"
+      ],
+      "geographic_context": {
+        "area_type": null,
+        "investigation_region": null,
+        "land_use_result_ids": null
+      },
+      "query_progress": null,
+      "findings": null,
+      "tentative_interpretations": null,
+      "open_questions": null
+    }
+  ],
+  "steps": [
+    {
+      "step_id": "step_001",
+      "description": null,
+      "source_cells": [
+        {
+          "cell_index": null,
+          "execution_count": null
+        }
+      ],
+      "state_before_id": "state_000",
+      "action": {
+        "type": null,
+        "function_name": null,
+        "arguments": null,
+        "unresolved_argument_expressions": null
+      },
+      "observation": {
+        "result_id": "result_001",
+        "summary": null,
+        "values": null,
+        "data_files": null,
+        "images": [
+          {
+            "path": "<IMAGE_PATH>",
+            "source_cell_index": null,
+            "association_basis": null,
+            "original_caption": null,
+            "retrospective_description": null
+          }
+        ]
+      },
+      "original_manual_note": {
+        "text": null,
+        "source_cell_indices": null
+      },
+      "state_after_id": "state_001"
+    }
+  ],
+  "final_outputs": null,
+  "unresolved_items": null
+}
+
