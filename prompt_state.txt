@@ -1,0 +1,278 @@
+Implement a retrospective recording workflow for my existing manual outage investigation. Read the Jupyter notebook, its referenced project code, and the saved inputs and outputs. Adapt the supplied synthetic prototype to the real internal data.
+
+Complete the implementation and generate the investigation records. Do not stop after producing a plan or a proposed schema.
+
+## Background and objective
+
+I am building an agentic system for network outage impact analysis.
+
+The investigation starts with a down-cell ID and an outage time. It may query cell metadata, geography, coverage, and KPIs; investigate affected locations; identify backup cells; estimate transferred traffic and load; and produce maps.
+
+I have completed one investigation manually in Jupyter. The notebook and its saved raw outputs are the source material for this task. Coverage and KPI data are confidential. OSM geography is public.
+
+A separate synthetic prototype demonstrates the recording workflow. Its source directory is `outage_poc`, and its example output directory is `demo`. Locate these references and the relevant notebook within the current workspace, or use the paths I provide. Do not search unrelated server directories.
+
+The current task is to convert the existing manual investigation into structured observations, states, steps, a trace, state text, and context previews.
+
+A future task will let an LLM choose actions. The recording and state-update functions developed now should also support that workflow. Do not implement or invoke a live LLM in this task.
+
+## Definitions
+
+Use these definitions consistently:
+
+- Observation: the result of an actual query or computation, with its parameters and source references.
+- State: the facts and computed results available at one point in the investigation.
+- Step: one executed investigation action, its observation, and references to the state before and after it.
+- Trace: the ordered steps for one investigation, with the associated task and evidence references.
+- State text: a deterministic, readable description generated from a structured state.
+- Context preview: the proposed input for choosing the next action, assembled from the fixed skill and the state text, with any explicitly included tool instructions.
+
+For the manual investigation, context previews are reconstructed now. They are not historical LLM requests. Do not invent model responses, model reasoning, or undocumented human decision reasons.
+
+## Read the real workflow before adapting the prototype
+
+Read the notebook, relevant helper functions, and referenced saved results.
+
+Create a concise mapping that identifies:
+
+- Each meaningful investigation action.
+- Its source notebook cells, using cell IDs when available and cell indices otherwise.
+- The evidence for its execution order.
+- The actual function or tool used.
+- Its parameters and input data.
+- The corresponding saved output files.
+- What information becomes available after that action.
+
+A notebook cell is not automatically a step. A meaningful query or analysis action may span several cells. Plotting-only cells can be associated with the action whose result they display.
+
+Notebook display order and execution counters are evidence about order, but neither alone proves the complete execution history. Account for reruns, overwritten variables, and saved outputs where relevant. Do not use file modification times as the sole ordering evidence.
+
+Write this mapping as part of the migration documentation, then continue implementation where the mapping is supported. If an ambiguity prevents a faithful reconstruction, identify the affected steps and the specific missing information. Do not silently guess.
+
+## Reuse the architecture, adapt the contracts
+
+Review the prototype’s actual functions, including:
+
+- `initial_state`
+- `apply_coverage`
+- `_summarize`
+- `render_context`
+- `_save_state`
+- `write_json`
+- The `State`, `Step`, and `Trace` definitions
+
+Reuse suitable logic, but adapt it to the internal project’s existing types, tools, and data formats.
+
+The synthetic prototype has assumptions that must not become requirements for real data:
+
+- A complete map is available at initialization.
+- Grid locations use synthetic row/column IDs and local metre coordinates.
+- Query regions and action order are predefined.
+- Observations are restricted to `source="synthetic"`.
+- Valid coverage records contain synthetic traffic values.
+- KPI data enter the final impact calculation directly.
+- Load estimation uses a demonstration PRB/capacity formula.
+
+Replace these assumptions using the actual notebook and internal code. Do not rename real fields to match synthetic fields without checking their meaning.
+
+## Read existing results through explicit adapters
+
+Use saved outputs to reconstruct the investigation. Do not rerun the whole notebook, repeat production queries, or fetch current OSM data as a substitute for historical results.
+
+Keep original data and notebook files unchanged. Reference existing raw outputs where practical. Store normalized observations only when they serve a clear purpose, with links to their original sources.
+
+For coverage, preserve:
+
+- Query geometry and the actual coordinate system.
+- Location identifiers and coordinates.
+- Observed cell IDs and signal measurements.
+- Units and available measurement-time information.
+- The distinction between unqueried, missing, valid empty coverage, and valid coverage without the down cell.
+
+Do not require synthetic traffic fields in real coverage results.
+
+For geography, use the actual saved OSM or other spatial data and the project’s existing geometry tools. Do not impose synthetic rectangles, a fixed grid spacing, or predefined S1/S2/H1/H2 objects.
+
+For KPI data, preserve:
+
+- Cell ID.
+- Metric definition and unit.
+- Time window.
+- Aggregation, such as mean or maximum, when applicable.
+- Value, availability, and source.
+
+Keep observed KPI values separate from estimated post-transfer load. Reuse the notebook’s actual calculation functions and assumptions. Do not introduce the synthetic load formula or claim to use RRC if the real calculation does not use it.
+
+Keep all confidential data, derived records, and reports inside the authorized internal environment. Do not upload them or send them to external services.
+
+## Reconstruct state progressively
+
+Start with only the information available at the beginning of the manual investigation.
+
+Process the recovered actions and observations in order:
+
+1. Retain the current state as `state_before`.
+2. Generate the context preview from that state.
+3. Read the actual action and its saved result.
+4. Normalize the result where necessary.
+5. Apply a deterministic state update.
+6. Save `state_after`, its state text, and the step record.
+7. Continue with the next recorded action.
+
+Geography, coverage, and KPI information must enter the state when the investigation actually obtained it. Do not preload later discoveries into earlier states.
+
+Support the information types present in the real notebook. A single investigation state can contain geographic knowledge, coverage progress, cell KPI observations, and derived impact results. KPI evidence is associated with cells and time windows; do not force it into grid-specific evidence fields.
+
+Preserve earlier snapshots. Handle overlapping queries without double-counting locations. Define how repeated observations are selected using the actual data semantics; do not silently merge measurements from incompatible times.
+
+Keep observations and computed estimates distinguishable. Link derived results to their inputs and calculation parameters.
+
+If the notebook reads existing KPI data during another analysis step, record that accurately. Do not invent a separate historical KPI query that did not occur.
+
+## Generate readable state text and context previews
+
+Generate text using ordinary code, templates, and explicit conditions. Do not use an LLM to summarize the raw data.
+
+Preserve the prototype’s useful information while adapting the wording to the real investigation. Organize related facts together:
+
+- Task and outage information.
+- Brief overall investigation progress.
+- For each relevant region: known geography, queried scope, coverage observations, signal statistics, boundary evidence, and unknown areas.
+- Available cell KPI observations, including time and units.
+- Completed traffic or load calculations and their scope.
+- Remaining information gaps.
+- Existing geographic or tool references that can support another action.
+
+Every numerical statement must come from the state or a documented computation over observed data.
+
+Do not infer signal trends from a minimum/maximum pair, equate mapped residential land with population counts, or turn unknown coverage into absent coverage.
+
+Preserve images as human-readable evidence references. The intended LLM cannot read images. Use the underlying structured data to generate text. If a required fact exists only in an image, identify the limitation rather than inventing exact measurements.
+
+Use the existing output naming if suitable, but document it clearly:
+
+- `contexts/state_N.txt` means the text representation of state N.
+- `previews/step_N.txt` means the proposed input before step N.
+- The preview for step N uses the state before that step, not the result of step N.
+
+Adapt the fixed skill to the real tools and conventions. Remove synthetic-only instructions, example answers, and any case-specific future action sequence.
+
+## Keep the workflow usable for a future LLM trace
+
+Separate action selection from action execution and recording.
+
+For this task, actions come from the notebook history. In a future run, actions will come from an LLM. Both paths should be able to use the same suitable state-update and recording functions.
+
+A future LLM input will combine:
+
+- The investigation task and fixed skill.
+- Actual tool definitions and action requirements.
+- Text generated from the new case’s current state.
+- Optional selected historical examples.
+
+Historical traces must remain separate from the new case’s current evidence. Do not automatically include a complete historical trace in every context.
+
+Document where the future model call will connect. Do not add an agent framework or build a live model integration now.
+
+When live calls are implemented later, the system must record the actual request, tool definitions, included examples, returned response or action, and relevant model settings. A reconstructed context preview must not be treated as an actual request.
+
+## Required outputs
+
+Provide a runnable command that converts the existing manual investigation using the saved data.
+
+Generate:
+
+- Normalized observations or clear references to existing raw results.
+- Structured state snapshots.
+- Deterministic state-text files.
+- Context previews for the recorded decision points.
+- Step records with source notebook cells, action parameters, observation references, and before/after states.
+- An ordered `trace.json`.
+- References to existing maps and figures.
+- A concise migration guide and the notebook-to-step mapping.
+
+Mark the execution as manual and the record as retrospectively reconstructed. Do not retain `scripted_demo` or `synthetic` labels on real records.
+
+Reuse the simple report viewer if it fits the internal project without adding dependencies. The core deliverable is the working conversion and records.
+
+Do not claim that the end of the notebook proves investigation completeness. Full stopping rules, recovery, historical retrieval, and model experiments are outside this task.
+
+## Engineering and completion
+
+Follow the project’s `AGENTS.md` and existing architecture. Keep the implementation small and fully typed. Do not introduce new runtime dependencies, frameworks, databases, compatibility layers, or silent fallbacks.
+
+Use uv for Python environment and dependency management. Run project commands through uv. Do not hand-edit dependency lists or the lockfile.
+
+Use focused logic tests for meaningful behavior, including:
+
+- Later observations do not appear in earlier states.
+- Overlapping queries do not inflate counts.
+- Missing and valid empty coverage remain distinct.
+- KPI values retain their time window and meaning.
+- Context previews use the correct state-before.
+- Later updates do not modify earlier snapshots.
+
+Do not add hash manifests, generic file-integrity checks, or unrelated repository audits.
+
+Before completion, run the required project tests and these checks in order:
+
+uv run ruff format
+uv run ruff check --fix
+uv run ty check
+
+Run the conversion and report the actual output locations. Explain which prototype functions were reused, which were adapted, and where the future LLM action selection will connect.
+
+If the historical evidence cannot support a complete reconstruction, explicitly identify what was reconstructed and what remains unresolved. Do not fill gaps with synthetic data or fabricated explanations.
+
+
+## Project inputs and reference material
+
+Use the following paths in this internal environment:
+
+PROJECT_ROOT:
+<absolute path to the internal project>
+
+MANUAL_NOTEBOOK_PATH:
+<absolute path to the completed manual investigation notebook.ipynb>
+
+SAVED_OUTPUT_DIRECTORIES:
+- <absolute path to the saved coverage results>
+- <absolute path to other saved results, such as OSM, KPI data, and figures>
+
+## Project inputs and reference material
+
+You are already working in the project directory. Resolve all paths below relative to the current working directory. Do not require a separate project root or absolute paths.
+
+MANUAL_NOTEBOOK_PATH:
+<relative path to the completed manual investigation notebook.ipynb>
+
+SAVED_OUTPUT_DIRECTORIES:
+- <relative path to the saved investigation outputs>
+
+REFERENCE_CODE_DIR:
+./outage_poc/
+
+REFERENCE_DEMO_DIR:
+./demo/
+
+MIGRATION_OUTPUT_DIR:
+./manual_trace/
+
+Replace the notebook and saved-output placeholders with the actual relative paths. If the saved outputs are distributed across several directories, list those directories under SAVED_OUTPUT_DIRECTORIES.
+
+The reference directories contain:
+
+- `outage_poc/`: the synthetic prototype source code. Read this code to understand the data structures, state updates, text generation, and recording functions.
+- `demo/`: the generated synthetic example, including observations, states, state text, context previews, steps, and the complete trace.
+
+Treat the real notebook and its saved outputs as the evidence for the manual investigation. Use the reference code and demo to understand and adapt the implementation. Do not copy the synthetic records and replace their identifiers or numbers.
+
+Keep the original notebook and saved data unchanged. Write the generated investigation records to MIGRATION_OUTPUT_DIR.
+
+If a required input is missing or inaccessible, report the specific path. Search only within the current project and the supplied data directories.
+
+The full migration requirements follow.
+
+
+
+
